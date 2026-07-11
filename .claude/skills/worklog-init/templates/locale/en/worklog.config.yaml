@@ -33,3 +33,11 @@ index_recent_days: 3           # how many days of summaries the wiki index heade
 diary_title_template: "# Work diary: {year}-{month}-{day} ({weekday})"   # {weekday} resolves to the full English weekday name (e.g. Saturday)
 
 # upstream_repo: https://github.com/iyuenan3/worklog-kit   # source for worklog-update; fork users point this at their upstream
+
+# ── Sensitive layer: worklog.config.local.yaml (same directory, gitignored) ──
+# Loading rule: skills load this file, then override same-name keys from the local file; a missing local file is normal.
+# Principle: any token / password / private URL / internal hostname goes ONLY in the local file, never here.
+# None of the v0.1 built-in sources need credentials there (remote-ssh uses ~/.ssh, feishu uses lark-cli's own auth, github uses gh);
+# the layer is reserved for future connectors and your custom fields, e.g.:
+# my_custom_source:
+#   api_token: "xxxx"

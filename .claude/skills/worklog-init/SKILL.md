@@ -55,11 +55,11 @@ gh api "repos/{owner}/{repo}" --jq .visibility   # owner/repo 从 git remote 解
    - 用飞书等 IM 协调工作吗？→ `im` 源（提示：需另跑 feishu-setup 完成认证；默认只记你自己发的消息）
    - 有不用 git 的项目目录（写作 / 设计）吗？→ `local-dir` 显式声明
 
-写入时附加 `initialized_at: <ISO8601 时间戳>`（重跑判据）。`language: en` 时以 `templates/locale/en/worklog.config.yaml` 为底生成（英文注释 + 英文 `diary_title_template`），再填入上面收集的值。
+写入时附加 `initialized_at: <ISO8601 时间戳>`（重跑判据）。`language: en` 时以 `.claude/skills/worklog-init/templates/locale/en/worklog.config.yaml` 为底生成（英文注释 + 英文 `diary_title_template`），再填入上面收集的值。
 
 ### Step 4 · locale 骨架实例化
 
-- `language: en` → 用 `templates/locale/en/` 整套覆盖对应产品件：`wiki/` 三件、根 `CLAUDE.md`、`AGENTS.md`、`AIREADME/` 全套（config 已在 Step 3 处理）。zh 为默认，无动作。
+- `language: en` → 用 `.claude/skills/worklog-init/templates/locale/en/` 整套覆盖对应产品件：`wiki/` 三件、根 `CLAUDE.md`、`AGENTS.md`、`AIREADME/` 全套（config 已在 Step 3 处理）。zh 为默认，无动作。locale 模板随本 skill 分发，也随 worklog-update 同步更新。
 - **出厂检测**：仅覆盖用户未改过的文件，判据 = `git diff --name-only HEAD -- <path>` 无输出且该文件与模板仓出厂内容一致（本仓 clone 后未动即满足）；有用户改动的文件跳过并说明。
 
 ### Step 5 · 扫描预览与项目定级（同意机制第一道闸，PRD §6.4）
@@ -102,7 +102,7 @@ pitfalls 装好后，展示这行全局纪律并**征得同意**后追加进 `~/
 
 ### Step 7 · 收尾
 
-1. **可选移除开发文档**：询问是否删除 `docs/dev/`（worklog-kit 的开发文档，vault 用户不需要）。同意则 `git rm -r docs/dev/` 并清理全部指向它的引用，一处不清就是死链：① 根 CLAUDE.md 末尾的 dev 指针行；② README.md 与 README.en.md 状态段指向 `docs/dev/PRD.md` 的链接（删除该链接、保留 `docs/methodology.md` 链接）；③ CONTRIBUTING.md 里的 `docs/dev/PRD.md` 引用（改为「见上游仓 PRD」，贡献流程只对上游仓有意义）。同批再问一句是否移除开发基建 `.github/` 与 `tests/`（**两者成对删，只删其一会让留下的 CI 变红**）：保留则 CI 会在你的 vault 上继续跑（含对日记的凭证扫描，有误报可能）；移除则 vault 零 CI，日常校验靠 worklog-lint。
+1. **可选移除开发文档**：询问是否删除 `docs/dev/`（worklog-kit 的开发文档，vault 用户不需要）。同意则 `git rm -r docs/dev/` 并清理全部指向它的引用，一处不清就是死链：① 根 CLAUDE.md 末尾的 dev 指针行；② README.md 与 README.en.md 状态段指向 `docs/dev/PRD.md` 的链接（删除该链接、保留 `docs/methodology.md` 链接）；③ `.github/CONTRIBUTING.md` 里的 `docs/dev/PRD.md` 引用（仅当保留 .github/ 时需要清理）。同批再问一句是否移除开发基建 `.github/`（CI、issue 模板与 CONTRIBUTING，皆为上游仓事务）与 `tests/`（**两者成对删，只删其一会让留下的 CI 变红**）：保留则 CI 会在你的 vault 上继续跑（含对日记的凭证扫描，有误报可能）；移除则 vault 零 CI，日常校验靠 worklog-lint。
 2. **生成上手指南**：按 language 把 `.claude/skills/worklog-init/templates/GETTING_STARTED.<lang>.md` 复制为 vault 根 `GETTING_STARTED.md`（已在 .gitignore）。
 3. **commit**：消息按 language（zh `init: worklog vault 初始化` / en `init: worklog vault initialized`），含 config 与骨架变更；Step 1 检测到 remote 才 push 一次验证链路，无 remote 则跳过并在报告提示。
 4. **收尾报告**：预检 ⚠️ 清单、visibility 结论、config 摘要（几个源 / 几个项目 / 各级别计数）、下一步指引（读 GETTING_STARTED；ingest 就绪后今晚就能「记录今天」）。

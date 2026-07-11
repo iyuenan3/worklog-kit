@@ -34,7 +34,7 @@ worklog-kit 是 `project-lifecycle` 方法论的**官方参考实现与 canonica
 
 ### 4.1 仓根即模板（开发件与产品件分离）
 
-**仓库根目录就是用户的 vault 模板**：用户 GitHub「Use this template」建私仓（或 clone）后，打开即是自己的 vault，根 CLAUDE.md 是面向用户的 vault router（产品件）。kit 自身的开发文档（本 PRD、开发路由 DEV.md）隔离在 `docs/dev/`（贡献指南 CONTRIBUTING.md 依 GitHub 惯例在仓根），`worklog-init` 实例化时提供一键移除；开发期路由同样收在 `docs/dev/`，绝不占用产品件位置。
+**仓库根目录就是用户的 vault 模板**：用户 GitHub「Use this template」建私仓（或 clone）后，打开即是自己的 vault，根 CLAUDE.md 是面向用户的 vault router（产品件）。kit 自身的开发文档（本 PRD、开发路由 DEV.md）隔离在 `docs/dev/`（贡献指南在 `.github/CONTRIBUTING.md`，GitHub 认可位置，与 CI / issue 模板同组、随开发基建整体可移除），`worklog-init` 实例化时提供一键移除；开发期路由同样收在 `docs/dev/`，绝不占用产品件位置。
 
 ```
 worklog-kit/                      # 仓根 = 用户 vault 模板
@@ -52,7 +52,7 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
 ├── docs/methodology.md           # project-lifecycle 方法论全文（v0.4 迁入，产品件，随模板分发）
 ├── docs/dev/                     # kit 开发文档（PRD / DEV 开发路由），init 可一键移除；CONTRIBUTING.md 在仓根
 └── .claude/skills/
-    ├── worklog-init/             # 初始化：环境预检 + config 生成 + 三件套全局安装 + 冷启动
+    ├── worklog-init/             # 初始化：环境预检 + config 生成 + 三件套全局安装 + 冷启动（locale 模板随本 skill）
     ├── worklog-ingest/           # config 驱动通用版（核心工程，重写非删改）
     ├── worklog-import/           # markitdown 素材摄入（init 存量迁移复用）
     ├── feishu-setup/             # IM 连接器接口（§6.3）的首个参考实现
@@ -65,7 +65,7 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
     └── pitfalls/                 # canonical 在此维护
 ```
 
-> 图中省略：开发 / CI 基建（`.github/`、`tests/`、`templates/locale/`）与标准 OSS 文件（`LICENSE`、`CHANGELOG.md`、`README.en.md`、`CONTRIBUTING.md`）。
+> 图中省略：开发 / CI 基建（`.github/` 含 CI、issue 模板与 CONTRIBUTING；`tests/`）与标准 OSS 文件（`LICENSE`、`CHANGELOG.md`、`README.en.md`）。locale 模板（zh / en 骨架件）在 `.claude/skills/worklog-init/templates/locale/`，随 init skill 分发与升级。
 
 ### 4.2 工作流 skill 的 canonical 家 = 本仓（v0.4 定稿）
 

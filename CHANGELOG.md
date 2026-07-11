@@ -2,6 +2,15 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## Unreleased · 仓根收缩（2026-07-11）
+
+根目录只留 vault 本体与 GitHub 惯例件，上游仓专属 / 仅 init 时使用的资产归位：
+
+### Changed
+- `templates/locale/` 迁入 `.claude/skills/worklog-init/templates/locale/`：locale 模板本是 init 的实例化资源，与 GETTING_STARTED 模板同居；顺带获得 worklog-update 的同步覆盖（原先根级 templates/ 不在升级白名单内）
+- `CONTRIBUTING.md` 迁入 `.github/`（GitHub 认可位置，PR 界面照常展示）：与 CI、issue 模板同组为「上游仓事务」，init 的开发基建移除选项可整体带走
+- `worklog.config.local.yaml.example` 删除，内容折叠为两份 config 模板的尾部注释（敏感层说明与示例就近可见，少一个根级文件）
+
 ## Unreleased · 第三轮 review 修复（忠实度实跑 + 合规 + 威胁建模 + token 经济，2026-07-11）
 
 fixture vault 实跑 ingest 全流程 + 双审计员对照 ground truth，14 条确认全处置。核心发现：执行者自评「无编造」，独立幻觉审计员实锤 6 处编造的决策理由入日记并沉淀进 wiki 决策日志（P0）。

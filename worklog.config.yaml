@@ -33,3 +33,11 @@ index_recent_days: 3           # wiki index 头部保留最近几天的摘要
 diary_title_template: "# 工作日记：{year}年{month}月{day}日（{weekday}）"   # {weekday} 解析为 周X（与 frontmatter day 及日期门校验一致）
 
 # upstream_repo: https://github.com/iyuenan3/worklog-kit   # worklog-update 拉取源；fork 用户改成自己的上游
+
+# ── 敏感配置层：worklog.config.local.yaml（与本文件同目录，已被 .gitignore 排除）──
+# 读取规则：skill 加载本文件后用 local 文件同名键覆盖；local 不存在 = 正常，静默跳过。
+# 原则：任何 token / 密码 / 私有 URL / 内网主机名只放 local，绝不写进本文件。
+# v0.1 内置源都无需在 local 存凭证（remote-ssh 走 ~/.ssh、feishu 走 lark-cli 自身认证、github 走 gh）；
+# 该层为未来连接器与自定义字段预留，示例：
+# my_custom_source:
+#   api_token: "xxxx"
