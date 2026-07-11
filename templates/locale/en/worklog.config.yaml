@@ -21,7 +21,7 @@ sources:
   # - {type: local-dir, path: ~/writing/notes, track: mtime}    # non-git projects must be declared explicitly
 
 projects:
-  default_level: detail        # default recording level for leveled projects: detail / summary / presence / exclude
+  default_level: detail        # level used when an overrides entry omits `level` (detail / summary / presence / exclude)
   on_new_project: presence     # initial level for newly discovered projects (safe default: existence + commit count only)
   overrides: []                # bulk leveling by path, e.g. {match: "~/employer/**", level: summary}
 

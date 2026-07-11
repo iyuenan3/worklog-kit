@@ -96,7 +96,10 @@ pitfalls 装好后，展示这行全局纪律并**征得同意**后追加进 `~/
 3. **commit**：消息按 language（zh `init: worklog vault 初始化` / en `init: worklog vault initialized`），含 config 与骨架变更；Step 1 检测到 remote 才 push 一次验证链路，无 remote 则跳过并在报告提示。
 4. **收尾报告**：预检 ⚠️ 清单、visibility 结论、config 摘要（几个源 / 几个项目 / 各级别计数）、下一步指引（读 GETTING_STARTED；ingest 就绪后今晚就能「记录今天」）。
 
+### Step 8 · 冷启动回填（可选）
+
+问一句「要不要把最近几天回填成简版日记（默认 3 天）」；同意则按 worklog-ingest 的**回填模式**逐天生成（概览 + 时间线 + commit 清单，只回填定级为 detail / summary 的项目，标注「自动回填、信息有限」），已存在的日期跳过。
+
 ## 边界
 
-- 冷启动日记回填（最近 3 天简版）依赖 worklog-ingest，就绪后由本 skill 在收尾时代跑；当前版本先跳过并在报告说明。
 - 本 skill 绝不写入任何凭证；用户给出 token 类信息时引导放 `worklog.config.local.yaml`。

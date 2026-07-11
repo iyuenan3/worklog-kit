@@ -8,7 +8,7 @@
 | 触发 / 任务 | 行为 | skill |
 |---|---|---|
 | 「初始化 / init」 | 初始化 vault：预检 + config 生成 + 项目定级 + 全局 skill 安装 | worklog-init |
-| 「记录今天 / 昨天 / 补充今天 / 更新日记」 | 无人值守 ingest：扫描各数据源编译日记 + 更新 wiki + TODO 盘点 + commit | worklog-ingest（即将推出） |
+| 「记录今天 / 昨天 / YYYY-MM-DD / 补充今天 / 更新日记 / 回填 N 天」 | 无人值守 ingest：扫描各数据源编译日记 + 更新 wiki + TODO 盘点 + commit | worklog-ingest |
 | 丢文件进来 / 「收进 inbox」 | 素材转 markdown 入 `inbox/` | worklog-import（即将推出） |
 | 「查 X」 | 跨日记 + wiki 检索 | worklog-query（即将推出） |
 | 「检查 / lint」 | 断链 / frontmatter / 凭证扫描 | worklog-lint（即将推出） |

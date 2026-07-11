@@ -1,6 +1,7 @@
-# worklog 运行状态（无人值守安全网，不入 git）
+# worklog 运行状态（无人值守安全网 + 本地观测，均不入 git）
 .ingest-status.md
 .ingest.lock
+.ingest-history.log
 GETTING_STARTED.md
 
 # 敏感配置层（凭证只放这份）

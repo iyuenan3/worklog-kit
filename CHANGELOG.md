@@ -2,7 +2,15 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
-## Unreleased · M1 模板骨架（进行中）
+## Unreleased · M2 ingest 通用版
+
+### Added
+- `worklog-ingest` skill 通用重写（config 驱动、零硬编码、约 190 行）：四模式（新增 / 补充 / 更新 / 回填）+ 无人值守铁律 + config 生成的默认值表 + 分级记录过滤（detail / summary / presence / exclude + 新项目待定级）+ 降级矩阵 + git 安全三件（ff-only 拉取 / `.ingest.lock` / 锚点 append 兜底）+ visibility 检测 + `.ingest-history.log` 观测
+- `scan.sh` 可移植扫描器：自足单文件（`ssh 'bash -s'` 直发远端）、`--since/--until` 直传 git 零 shell 日期运算、identities 多作者过滤、`--branches --tags` 排除 stash 伪 commit、DIRTY 计数、mtime 兜底（`touch -t` + `find -newer`）、可选 GNU timeout 保护
+- 校验脚本随包：`punctuation_check.py`（zh 标点门）+ `date_weekday_check.py`（日期门，星期映射禁心算）
+- worklog-init 接入 Step 8 冷启动回填（默认 3 天简版，经 ingest 回填模式）
+
+## M1 模板骨架（2026-07-11）
 
 ### Added
 - 立项与 PRD（v0.4，`docs/dev/PRD.md`），产品叙事 README

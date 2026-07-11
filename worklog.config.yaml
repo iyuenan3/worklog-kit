@@ -21,7 +21,7 @@ sources:
   # - {type: local-dir, path: ~/writing/notes, track: mtime}    # 非 git 项目须显式声明
 
 projects:
-  default_level: detail        # 已定级项目的默认记录级别：detail / summary / presence / exclude
+  default_level: detail        # overrides 条目未显式给 level 时用此级别（detail / summary / presence / exclude）
   on_new_project: presence     # 新发现项目的初始级别（安全默认：只记存在与 commit 数，晨报待定级）
   overrides: []                # 按路径批量定级，如 {match: "~/employer/**", level: summary}
 

@@ -8,7 +8,7 @@
 | Trigger / task | Behavior | skill |
 |---|---|---|
 | "initialize / init / setup" | Initialize the vault: preflight + config + project leveling + global skill install | worklog-init |
-| "log today / yesterday / append today / amend the diary" | Unattended ingest: scan sources, compile the diary, refresh wiki, review todos, commit | worklog-ingest (coming soon) |
+| "log today / yesterday / YYYY-MM-DD / append today / amend the diary / backfill N days" | Unattended ingest: scan sources, compile the diary, refresh wiki, review todos, commit | worklog-ingest |
 | Drop a file / "into inbox" | Convert material to markdown into `inbox/` | worklog-import (coming soon) |
 | "look up X" | Search across diaries + wiki | worklog-query (coming soon) |
 | "check / lint" | Broken links / frontmatter / credential scan | worklog-lint (coming soon) |
