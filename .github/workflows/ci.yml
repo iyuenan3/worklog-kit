@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash syntax (bash -n)
+        run: |
+          set -e
+          find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 -n1 bash -n
+
+      # -S error：只把硬错误当门；style/warning 级由人审（本仓有意的分词展开较多）
+      - name: shellcheck (errors only)
+        run: |
+          command -v shellcheck >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck; }
+          find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 -r shellcheck -S error
+
+      - name: settings.json is valid JSON
+        run: python3 -c "import json; json.load(open('.claude/settings.json'))"
+
+      - name: aireadme structure check (template preset)
+        run: bash .claude/skills/aireadme/check.sh AIREADME
+
+      - name: vault lint (kit repo self-check)
+        run: python3 .claude/skills/worklog-lint/scripts/lint.py
+
+      - name: gate script tests (pytest)
+        run: |
+          python3 -m pip install --quiet pytest || python3 -m pip install --quiet --break-system-packages pytest
+          python3 -m pytest tests/ -q

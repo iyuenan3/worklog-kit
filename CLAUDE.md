@@ -11,9 +11,10 @@
 | 「记录今天 / 昨天 / YYYY-MM-DD / 补充今天 / 更新日记 / 回填 N 天」 | 无人值守 ingest：扫描各数据源编译日记 + 更新 wiki + TODO 盘点 + commit | worklog-ingest |
 | 丢文件进来 / 「收进 inbox / 导入这个」 | 素材转 markdown 入 `inbox/` | worklog-import |
 | 「配置飞书 / 接入 IM」 | IM 连接器安装认证向导 | feishu-setup |
-| 「查 X」 | 跨日记 + wiki 检索 | worklog-query（即将推出） |
-| 「检查 / lint」 | 断链 / frontmatter / 凭证扫描 | worklog-lint（即将推出） |
-| 「升级 skill」 | 从 upstream 拉 skill 新版（只动 `.claude/skills/`，永不碰你的数据） | worklog-update（即将推出） |
+| 「查 X」 | 跨日记 + wiki 检索（只读，答案带出处） | worklog-query |
+| 「检查 / lint」 | 契约锚点 / 凭证 / 断链 / frontmatter（zh 加标点与日期门） | worklog-lint |
+| 「升级 skill」 | 从 upstream 按 release tag 拉新版（只动 `.claude/skills/`，永不碰你的数据） | worklog-update |
+| 「导出 / 迁走」 | 全量导出为不依赖工具链的纯 markdown（退出通道） | worklog-export |
 
 > 日期边界：00:00 至 config `day_boundary`（默认 07:00）算前一天。时区按 config `timezone`。
 

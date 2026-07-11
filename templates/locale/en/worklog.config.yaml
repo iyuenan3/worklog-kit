@@ -31,3 +31,5 @@ modules:
 index_recent_days: 3           # how many days of summaries the wiki index header keeps
 
 diary_title_template: "# Work diary: {year}-{month}-{day} ({weekday})"
+
+# upstream_repo: https://github.com/iyuenan3/worklog-kit   # source for worklog-update; fork users point this at their upstream

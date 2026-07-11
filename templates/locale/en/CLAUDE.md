@@ -11,9 +11,10 @@
 | "log today / yesterday / YYYY-MM-DD / append today / amend the diary / backfill N days" | Unattended ingest: scan sources, compile the diary, refresh wiki, review todos, commit | worklog-ingest |
 | Drop a file / "into inbox / import this" | Convert material to markdown into `inbox/` | worklog-import |
 | "set up Feishu / connect IM" | IM connector install and auth wizard | feishu-setup |
-| "look up X" | Search across diaries + wiki | worklog-query (coming soon) |
-| "check / lint" | Broken links / frontmatter / credential scan | worklog-lint (coming soon) |
-| "upgrade skills" | Pull new skill versions from upstream (touches `.claude/skills/` only, never your data) | worklog-update (coming soon) |
+| "look up X" | Search across diaries + wiki (read-only, cited answers) | worklog-query |
+| "check / lint" | Contract anchors / credentials / broken links / frontmatter (zh adds punctuation and date gates) | worklog-lint |
+| "upgrade skills" | Pull new versions from upstream by release tag (touches `.claude/skills/` only, never your data) | worklog-update |
+| "export / move out" | Export everything as toolchain-free plain markdown (exit path) | worklog-export |
 
 > Day boundary: 00:00 until config `day_boundary` (default 07:00) belongs to the previous day. Timezone per config `timezone`.
 

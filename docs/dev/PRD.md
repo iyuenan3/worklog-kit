@@ -162,7 +162,8 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 | feishu-setup | §6.3 连接器接口的首个参考实现 |
 | worklog-query | 「查 X」跨日记 + wiki 检索行为显式化 |
 | worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；中文 locale 可选项：标点门（punctuation_check.py 随包，`language: zh` 才加载）；个人演化项不进 kit |
-| worklog-update | 只 rsync `.claude/skills/` 白名单路径（含三件套快照），其余 hard deny（§12） |
+| worklog-update | 镜像同步 `.claude/skills/` 白名单路径（含三件套统一经此更新），其余 hard deny（§12）；上游地址可经 config `upstream_repo` 覆盖（fork 用户） |
+| worklog-export | 退出通道（§9.5）：wikilink 转普通链接 + 移除 Tasks 查询块与行尾元数据 emoji，产物为不依赖工具链的纯 markdown |
 
 ## 8. worklog-ingest 重写规格（核心工程）
 
@@ -234,7 +235,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - **M1 模板骨架**（✅ 2026-07-11 完成，含四视角对抗验证 38 条修复）：仓根即模板重构（docs/dev/ 隔离）+ 契约文件全套预置（zh 默认 + en locale 全套：wiki 三件 / CLAUDE / AGENTS / AIREADME 12 件 / config）+ settings.json + 三件套与 project-lifecycle.md 迁入（含 §13 修缮；**personal-skills 侧 stub 顺延至 kit 翻 public 时落地**，避免公开仓指向 404 私仓）+ worklog-init（预检 / config 生成 / 扫描预览定级 / 全局安装 / dev 文档移除；冷启动回填待 M2 ingest 就绪后接入）
 - **M2 ingest 重写**（✅ 2026-07-11 完成，含四视角对抗验证 31 条修复 + fixture vault E2E 实跑验收）：§8 全部 + scan.sh 可移植版（自足单文件可经 `ssh 'bash -s'` 直发远端；`--since/--until` 直传 git 零 shell 日期运算，`--until` 由调用方减 1 秒保半开语义；`touch -t` + `find -newer` 做 mtime 兜底；参数数组化防含空格作者名；可选 GNU timeout 保护）+ 标点门与日期门脚本随包
 - **M3 连接器**（✅ 2026-07-11 完成，含四视角对抗验证 30 条修复；feishu 组件级 fixture 实测 + github 真实账号实测）：github 收集器（发现 + 精扫两段式，账号维度作者过滤 + 已关联 email 盲区提示 + TRUNCATED / REPO_SKIP 降级信号）+ IM 连接器接口 v1（check 三态 / digest 行协议 / 隐私在采集层 / watchdog 超时）+ feishu 参考实现（实测 lark-cli 命令面）+ feishu-setup 与 worklog-import skill + ingest 跨源 hash 去重（7 位对齐 + 精确归并判据）+ init 存量迁移
-- **M4 收尾**：query / lint / update + README 产品叙事（中英双语）+ GETTING_STARTED + CI（shellcheck + punctuation_check pytest + 三件套 drift 提醒）+ 极简 CONTRIBUTING 与 issue 模板
+- **M4 收尾**（✅ 2026-07-11 完成，含三视角对抗验证 18 条修复；GETTING_STARTED 已在 M1 交付、三件套 drift CI 因 v0.4 canonical 迁入而废止）：query / lint / update / export 四 skill + README 产品叙事（中英双语）+ CI（bash -n / shellcheck / pytest / lint 自检）+ 极简 CONTRIBUTING 与双语 issue 模板
 - **M5 pilot 与发布**：种子用户试用（一个飞书重度 + 一个纯本机 / 无 IM；条件允许再加一个非飞书 IM 用户），企业飞书授权实测，`.claude/settings.json` allow 清单生效性实测（`:*` 前缀语法），按摩擦迭代；公开发布前过对抗式泄漏审计（含 git 历史 Author email 处理：squash 或改 noreply 地址；personal-skills 侧 stub 指针同日落地）
 
 ## 16. 开放问题

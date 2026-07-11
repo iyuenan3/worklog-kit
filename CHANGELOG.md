@@ -2,6 +2,17 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## Unreleased · M4 收尾
+
+### Added
+- `worklog-lint`：lint.py 机械项（契约锚点 / 凭证扫描 / 断链剥代码段 / frontmatter / log 轮转阈值，🔴🟡 退出码约定）+ zh 写作门编排（复用标点门与日期门，缺脚本优雅跳过）
+- `worklog-query`（只读、按意图分流、答案带出处）/ `worklog-update`（镜像同步 .claude/skills 白名单 + tag 锁定 + 顶层键追加式 schema 迁移 + 锚点兼容 dry-run + `upstream_repo` 支持 fork）/ `worklog-export`（退出通道：wikilink 去方言 + Tasks 查询块与行尾元数据清理）
+- README 中英双语（README.en.md）+ 状态段刷新至 M1-M4 完成
+- CI（bash -n + shellcheck errors + settings JSON + aireadme check + vault 自检 + pytest）+ tests/test_gates.py（三脚本 CLI 级 10 例）+ 极简 CONTRIBUTING + 双语 bug issue 模板
+
+### Removed
+- 「三件套 drift 提醒 CI」不再需要：v0.4 canonical 迁入本仓后无跨仓同步，该项随之废止
+
 ## Unreleased · M3 连接器
 
 ### Added
