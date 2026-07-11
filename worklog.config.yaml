@@ -30,6 +30,6 @@ modules:
 
 index_recent_days: 3           # wiki index 头部保留最近几天的摘要
 
-diary_title_template: "# 工作日记：{year}年{month}月{day}日（{weekday}）"
+diary_title_template: "# 工作日记：{year}年{month}月{day}日（{weekday}）"   # {weekday} 解析为 周X（与 frontmatter day 及日期门校验一致）
 
 # upstream_repo: https://github.com/iyuenan3/worklog-kit   # worklog-update 拉取源；fork 用户改成自己的上游

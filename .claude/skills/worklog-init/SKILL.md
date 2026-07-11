@@ -69,7 +69,16 @@ bash .claude/skills/worklog-init/scripts/discover.sh <roots...>
 ```
 
 - 把发现的项目列成表（含 IGNORED 项与未挂载 root），向用户逐个或按目录批量定级：`detail` / `summary` / `presence` / `exclude`。
-- 强调一句：**这份清单就是「会被记录的范围」**，雇主 / 敏感项目建议 summary 或 exclude；漏掉的目录回 Step 3 补 root。
+- **定级前先展示各级别实际抓取的数据维度**（用户不看这张表就选 detail 等于不知情同意）：
+
+| 级别 | 会记录什么 |
+|---|---|
+| detail | commit 主题逐条原文 + LLM 提炼的决策与取舍 + 建持久 wiki 项目页（含跨日决策日志） |
+| summary | 一句概要 + 计数；不逐条读、不建项目页 |
+| presence | 只记「存在 + commit 数」，不读任何内容 |
+| exclude | 全 vault 零出现 |
+
+- 强调两句：**这份清单就是「会被记录的范围」**，且这些数据会进入你的个人 GitHub 私仓；雇主 / 客户项目选 detail 前请自行确认雇佣合同与保密义务允许（与 `connectors/README.md`「IM 数据使用须知」同一责任边界），拿不准就 summary 或 exclude。漏掉的目录回 Step 3 补 root。
 - 定级结果写进 config 的 `projects.overrides`，条目格式**必须**是 `- {match: "<glob>", level: detail|summary|presence|exclude}`（例：`- {match: "~/work/**", level: summary}`）；全部默认 detail 的可不写 override。
 - 提醒：日后新发现的项目默认 `presence` 级（安全默认），晨报会列「待定级」。
 
@@ -82,6 +91,8 @@ mkdir -p ~/.claude/skills
 # 目标已存在 → diff -rq 比较，向用户提示 覆盖 / 跳过（不默改用户已有的全局 skill）
 cp -r .claude/skills/<name> ~/.claude/skills/
 ```
+
+**信任模型**（与 worklog-update 的供应链信任模型同源）：三件套 SKILL.md 是将来会被全局加载的 LLM 可执行指令，信任边界 = 你 clone 的这个仓的来源。首次安装（目标不存在、无 diff 可看）也先向用户展示每个 skill 的一句话用途与来源确认后再 cp；仓库来源不是官方 upstream / 用户自己的 fork 时，提醒装前自行审阅 SKILL.md 内容。
 
 pitfalls 装好后，展示这行全局纪律并**征得同意**后追加进 `~/.claude/CLAUDE.md`（文件不存在则新建；先 grep 查重，已有则跳过；只追加，绝不覆盖已有内容）：
 

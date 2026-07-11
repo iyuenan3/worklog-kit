@@ -36,6 +36,7 @@ worklog-kit is a turn-key template for a **personal project brain**: one "parent
 
 - **Permission prompts on first run**: Claude Code loads the `.claude/settings.json` allowlist in this repo; most commands should not prompt. If one does, it is not on the list; choose "always allow" or add the pattern to `permissions.allow`
 - **A source failed overnight**: that is a designed-for path, not an outage. The morning report and `.ingest-status.md` state the reason and the fix command; ingest never blocks waiting for you
+- **How much quota does a night cost**: a typical setup (a dozen projects) is comparable to one short interactive coding session; heavy setups (100+ repos, several IM chats) scale proportionally. If you hit your subscription rate limit mid-run, the run stops, finished parts are already committed, the lock file goes stale after 2 hours, and saying "append yesterday" the next day picks things up
 
 ## License
 

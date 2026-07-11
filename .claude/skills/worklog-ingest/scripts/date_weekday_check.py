@@ -5,12 +5,14 @@
     python3 date_weekday_check.py <file.md> [<file2.md> ...]
     python3 date_weekday_check.py --all          # 全仓 diaries/ + wiki/
 
-覆盖 5 种写法:
+覆盖 7 种写法（zh 5 种 + en 2 种）:
     1. frontmatter `date:` + `day: 周X`
     2. 标题「YYYY年M月D日（周X）」
-    3. 「M/D（周X）」        （年份按 frontmatter date 或文件名推断, 兜底 2026）
+    3. 「M/D（周X）」        （年份按 frontmatter date 或文件名推断, 兜底当前年）
     4. 「周X（M/D）」
     5. 「YYYY-MM-DD（周X）」
+    6. frontmatter `date:` + `day: Saturday`（en locale）
+    7. 「YYYY-MM-DD (Saturday)」（en，半角括号；括号词不是星期词则跳过不校验）
 
 退出码: 0 = 干净 / 1 = 有不一致 / 2 = 用法错误 / 3 = 有文件读取失败(其余已检测, 与 punctuation_check.py 契约一致)。
 写订正说明时引用旧错请改写成「误配」措辞（如「周六原误配 7/12」），
@@ -24,6 +26,9 @@ import sys
 
 WD = {"一": 0, "二": 1, "三": 2, "四": 3, "五": 4, "六": 5, "日": 6, "天": 6}
 WDN = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+WD_EN = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3,
+         "friday": 4, "saturday": 5, "sunday": 6}
+WDN_EN = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 WORKLOG = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
 
@@ -53,11 +58,28 @@ def check_file(path):
             errors.append((path, line_no,
                            f"{y}-{m:02d}-{d:02d} 实为{WDN[real]}, 文中写周{wd_char}", ctx))
 
+    def check_en(y, m, d, word, line_no, ctx):
+        real_idx = WD_EN.get(word.lower())
+        if real_idx is None:
+            return  # 括号词不是星期（如 (draft)）, 不属校验对象
+        try:
+            real = datetime.date(y, m, d).weekday()
+        except ValueError:
+            errors.append((path, line_no, f"非法日期 {y}-{m}-{d}", ctx))
+            return
+        if real_idx != real:
+            errors.append((path, line_no,
+                           f"{y}-{m:02d}-{d:02d} 实为 {WDN_EN[real]}, 文中写 {word}", ctx))
+
     mdate = re.search(r"^date: (\d{4})-(\d{2})-(\d{2})", text, re.M)
     mday = re.search(r"^day: 周(.)", text, re.M)
     if mdate and mday:
         check(int(mdate.group(1)), int(mdate.group(2)), int(mdate.group(3)),
               mday.group(1), 0, "frontmatter date/day")
+    mday_en = re.search(r"^day: ([A-Za-z]+)\s*$", text, re.M)
+    if mdate and mday_en:
+        check_en(int(mdate.group(1)), int(mdate.group(2)), int(mdate.group(3)),
+                 mday_en.group(1), 0, "frontmatter date/day (en)")
 
     for i, ln in enumerate(text.split("\n"), 1):
         for m in re.finditer(r"(\d{4})年(\d{1,2})月(\d{1,2})日（周(.)）", ln):
@@ -72,6 +94,8 @@ def check_file(path):
                 check(year, mo, da, m.group(1), i, ln[:80])
         for m in re.finditer(r"(\d{4})-(\d{2})-(\d{2})（周(.)）", ln):
             check(int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4), i, ln[:80])
+        for m in re.finditer(r"(\d{4})-(\d{1,2})-(\d{1,2}) \(([A-Za-z]+)\)", ln):
+            check_en(int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4), i, ln[:80])
     return errors
 
 

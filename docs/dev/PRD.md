@@ -247,6 +247,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 ## 16. 开放问题
 
 - pilot 人选待定
+- skill 指令面目前 zh 单语（模板与产出语言已按 config `language` 分流，en 用户执行正确性依赖模型双语能力）：是否翻译 SKILL 全集待 pilot 反馈定
 - 发布时机：GitHub 私仓已建（2026-07-11），M5 过对抗式泄漏审计（含本 PRD 与 git 全历史）后翻 public + 开 template 开关
 - 第二个 IM 连接器（slack / 企业微信）的时机与归属（维护者 or 社区）
 

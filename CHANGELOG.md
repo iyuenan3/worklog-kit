@@ -2,6 +2,20 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## Unreleased · 第三轮 review 修复（忠实度实跑 + 合规 + 威胁建模 + token 经济，2026-07-11）
+
+fixture vault 实跑 ingest 全流程 + 双审计员对照 ground truth，14 条确认全处置。核心发现：执行者自评「无编造」，独立幻觉审计员实锤 6 处编造的决策理由入日记并沉淀进 wiki 决策日志（P0）。
+
+### Fixed
+- **P0 幻觉逃生舱**：ingest「有决策必写 why」补硬约束：why 只能转述素材原文，素材未述写「理由素材未述」+ ⚠️，禁止推测补全（D.1 judgment 与 D.2 项目页决策日志两处）
+- **P1**：时间线禁编钟点（brain-dump 只说「下午」就写「下午」，估算排序必标 ⚠️ 与推断依据）；exclude 级从「日记不出现」收紧为「全部 git 追踪产物零出现」（log.md 原会写出被排除项目名，泄漏用户要藏的项目）；summary / presence 级的时间线行为显式化（聚合一行，不逐条展开）；init 定级前必须先展示四级数据维度表 + 雇主合规提醒（不看表选 detail 等于不知情同意）；init Step 6 全局安装补供应链信任模型（首装也要先看内容再 cp）
+- **P2 执行猜测点 ×6**（executor_notes 转化）：overrides glob 匹配语义、`{weekday}` 解析规则（config 双语注释 + D.1）、Co-Authored-By 模型名推导、index「最后更新」行格式、`init:` 脚手架 commit 不算工作线、`git_commits` 计数口径；README 双语补「一晚花多少额度」与限流中断预期
+
+### Added
+- 日期门支持 en 写法（frontmatter `day: Saturday` + 「YYYY-MM-DD (Saturday)」，非星期括号词跳过）；lint 写作门口径改为「标点门仅 zh、日期门 zh / en 都跑」；tests 补 en 三例
+- ingest 错误表补「上次运行崩溃残留」行（残留改动先单独 commit 再开跑）
+- PRD §16 开放问题补「skill 指令面 zh 单语，是否翻译待 pilot 反馈」
+
 ## Unreleased · 第二轮 review 修复（换视角，2026-07-11）
 
 第二轮 8 个全新视角（执行歧义 / 恶意输入 / 时间并发 / 长期规模 / 越轨用户 / 发布形态 / 回归 / 反向契约），13 条确认 + 3 条存疑全处置：

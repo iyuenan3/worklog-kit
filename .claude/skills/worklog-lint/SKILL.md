@@ -17,10 +17,10 @@ python3 .claude/skills/worklog-lint/scripts/lint.py
 
 🔴 must-fix（exit 1）：契约锚点缺失、疑似凭证、diary frontmatter 缺 date（只查 `YYYY-MM-DD.md` 命名的文件，同步冲突副本等杂件降为 advisory）。🟡 advisory：断链（跨库引用可忽略，判断前先问用户该链接是否指向 vault 外）、项目页 frontmatter 缺字段、log.md / index.md 增长超阈值该轮转归档、diaries/ 里的非日记命名文件。凭证扫描的有意示例行可加行内 `lint:ignore` 标记豁免（仅正文区生效，config 不豁免）。
 
-2. **zh 写作门**（config `language: zh` 才跑；复用 ingest 随包脚本，脚本不存在则提示「worklog-ingest 未安装或版本过旧，跳过写作门」不报错）：
+2. **写作门**（复用 ingest 随包脚本，脚本不存在则提示「worklog-ingest 未安装或版本过旧，跳过写作门」不报错）。标点门仅 `language: zh` 跑；日期门 zh / en 都跑（脚本同时识别中英两套星期写法）：
 
 ```bash
-python3 .claude/skills/worklog-ingest/scripts/punctuation_check.py <改动过的 md 或用户点名的文件>
+python3 .claude/skills/worklog-ingest/scripts/punctuation_check.py <改动过的 md 或用户点名的文件>   # 仅 zh
 python3 .claude/skills/worklog-ingest/scripts/date_weekday_check.py --all
 ```
 

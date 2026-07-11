@@ -56,6 +56,27 @@ def test_date_weekday_mismatch(tmp_path):
     assert "周六" in r.stdout
 
 
+def test_date_weekday_en_ok(tmp_path):
+    f = tmp_path / "d.md"
+    f.write_text("---\ndate: 2026-07-11\nday: Saturday\n---\n"
+                 "# Work diary: 2026-07-11 (Saturday)\n", encoding="utf-8")
+    assert run(DATE, f).returncode == 0
+
+
+def test_date_weekday_en_mismatch(tmp_path):
+    f = tmp_path / "d.md"
+    f.write_text("# Work diary: 2026-07-11 (Sunday)\n", encoding="utf-8")
+    r = run(DATE, f)
+    assert r.returncode == 1
+    assert "Saturday" in r.stdout
+
+
+def test_date_weekday_en_non_weekday_paren_ignored(tmp_path):
+    f = tmp_path / "d.md"
+    f.write_text("Release 2026-07-11 (draft) shipped.\n", encoding="utf-8")
+    assert run(DATE, f).returncode == 0
+
+
 def _mk_vault(tmp_path):
     (tmp_path / "wiki" / "projects").mkdir(parents=True)
     (tmp_path / "diaries").mkdir()
