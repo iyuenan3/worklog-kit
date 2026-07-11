@@ -7,7 +7,7 @@
 
 ## 1. 背景与定位
 
-worklog-kit 是 [personal-skills](https://github.com/iyuenan3/personal-skills) 中 `project-lifecycle.md` 方法论的**官方参考实现**：用一个「父项目」当大脑，管住一群项目从想法到退役的全生命周期。
+worklog-kit 是 `project-lifecycle` 方法论的**官方参考实现与 canonical 维护地**（方法论全文见本仓 `docs/methodology.md`，v0.4 起自 [personal-skills](https://github.com/iyuenan3/personal-skills) 迁入）：用一个「父项目」当大脑，管住一群项目从想法到退役的全生命周期。
 
 它把源自维护者私有 worklog 的工作流（Karpathy LLM Wiki 三层架构 + 睡前无人值守 ingest + 跨项目集体记忆）产品化成**任何人拿来即可使用的通用开源项目**：不预设使用者是谁、在哪家公司、用什么 IM、说什么语言。核心命题一句话：**把「接线」变成「配置」**。可复制的是方法论与工作流骨架（三层所有权、无人值守铁律、默认值表机制、提纯阶梯）；一切个人接线（扫哪些目录、哪台远程机、哪个 IM、哪种语言）都以配置与连接器的形式存在，核心流程零特定假设。
 
@@ -49,6 +49,7 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
 ├── diaries/                      # 日记层（只追加）
 ├── wiki/                         # 知识层（LLM 维护）：index.md + log.md + todos.md + projects/
 ├── inbox/                        # 素材收件箱：人放原料、AI 消化
+├── docs/methodology.md           # project-lifecycle 方法论全文（v0.4 迁入，产品件，随模板分发）
 ├── docs/dev/                     # kit 开发文档（PRD / 审计 / CONTRIBUTING），init 可一键移除
 └── .claude/skills/
     ├── worklog-init/             # 初始化：环境预检 + config 生成 + 三件套全局安装 + 冷启动
@@ -58,18 +59,18 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
     ├── worklog-query/            # 「查 X」显式化
     ├── worklog-lint/             # 断链 / frontmatter / 凭证扫描（标点门为中文 locale 可选项）
     ├── worklog-update/           # 从 upstream 拉 skill 新版（安全边界见 §12）
-    ├── aireadme/                 # vendor 快照（见 §4.2）
-    ├── stash/                    # vendor 快照
-    └── pitfalls/                 # vendor 快照
+    ├── aireadme/                 # canonical 在此维护（§4.2）
+    ├── stash/                    # canonical 在此维护
+    └── pitfalls/                 # canonical 在此维护
 ```
 
-### 4.2 全局三件套：vendor 固定版本快照（v0.2 修正）
+### 4.2 工作流 skill 的 canonical 家 = 本仓（v0.4 定稿）
 
-- kit **随模板分发三件套（aireadme / stash / pitfalls）的固定版本快照**，`worklog-init` 把它们从 vault 内 cp 到 `~/.claude/skills/` 全局安装（已存在则比对提示覆盖 / 跳过），**全程无运行时网络拉取**
-- 修正理由：v0.1 曾定「不 vendor、init 时从 personal-skills 在线拉取」以省维护者同步成本；画像升级为「任何人」后权衡反转，通用产品必须自包含（任意用户的网络环境、上游仓的存续与命名都不可控），维护者同步成本改由 `scripts/sync-upstream.sh`（单向，从 personal-skills 指定 tag 同步 + 版本戳）+ CI drift 提醒覆盖
-- personal-skills 仍是三件套的 canonical 上游（打 release tag），kit 快照锁 tag；`project-lifecycle.md` 留在 personal-skills 作完整方法论，kit README 写简版叙事并链接
+- 三件套（aireadme / stash / pitfalls）与 `project-lifecycle.md` 方法论文档 **canonical 迁入本仓维护**：skill 在 `.claude/skills/`（随模板分发），方法论在 `docs/methodology.md`；`worklog-init` 把三件套从 vault 内 cp 到 `~/.claude/skills/` 全局安装（已存在则比对提示覆盖 / 跳过），**全程无运行时网络拉取**
+- 决策三步演化到终态：v0.1「init 在线拉 personal-skills」（省维护者同步成本，被通用性否决）→ v0.2「vendor 快照 + sync 脚本」（自包含，但留下两个公共真相源的永久同步负担）→ v0.4「canonical 迁入」（kit 开源且长期维护，真相源归一，sync-upstream.sh 与 drift 检查整体取消）
+- personal-skills 侧「软连接」：迁走的每个目录留 stub README（已迁至 worklog-kit，此处停止更新）+ 顶层 README 改指针表；story-writer 留守（不属于本产线）；worklog-ingest 公开骨架废弃为指针（由本仓通用重写版取代，顺带了结其「仅作参考不建议使用」的尴尬身份）；git 历史不搬（personal-skills 公开仓历史永久可考古），本仓 CHANGELOG 记 provenance
+- 三件套可单独取用：README 逐个给安装命令，不强制整套采纳（照顾「只想要 aireadme」的用户）
 - pitfalls「高危活前先查」全局纪律行仍**经用户确认后**追加进用户 `~/.claude/CLAUDE.md`（追加前检查该行是否已存在，绝不覆盖已有内容）
-- personal-skills README 中 worklog-ingest 条目从「不建议直接使用」改为指向 kit（发布时同步）
 
 ## 5. 冻结契约（v0.1）
 
@@ -206,15 +207,15 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 - worklog-update 安全边界：只同步 `.claude/skills/` 下白名单文件（kit 自有 skill + 三件套快照统一经此更新），绝不 `git merge` upstream，绝不触碰 diaries / wiki / config
 - config `schema_version`：skill 启动断言版本，update 后不匹配则输出需补字段 + 默认值；版本过旧给明确报错不静默异常
-- 三件套快照经 `scripts/sync-upstream.sh` 从 personal-skills release tag 单向同步，CI 做 drift 提醒
+- 三件套随本仓 release tag 一体发版，worklog-update 统一从本仓拉取（真相源归一，无跨仓同步）
 - update 后自动 dry-run 检测 wiki 结构与新版 skill 预期的兼容性，不兼容输出手动调整清单
 
-## 13. 上游 personal-skills 配套修复（随 kit 一并做）
+## 13. 三件套随迁修缮（M1 迁入时就地做）
 
 - stash/check.sh 与 aireadme/check.sh locale 策略统一为 `LC_ALL=C`；description 计数只走 python3 分支；README 声明 bash / python3 前置
 - aireadme check.sh 状态表表头兼容中英文；边界粗查补英文关键词；STANDARD.md 加「产出语言跟随项目主语言」指令
 - stash 路径推导加实测兜底（先 ls `~/.claude/projects/` 找实际存在目录，推导仅作 fallback）；MEMORY_SPEC 全角冒号降为可选偏好
-- pitfalls LIBRARY.md 种子坑标注平台 / bash 版本适用范围，补少量 Linux 常见坑；打 release tag
+- pitfalls LIBRARY.md 种子坑标注平台 / bash 版本适用范围，补少量 Linux 常见坑
 
 ## 14. 明确不做（v0.1）
 
@@ -230,7 +231,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 ## 15. 里程碑
 
-- **M1 模板骨架**：仓根即模板重构（docs/dev/ 隔离）+ 契约文件全套预置（zh / en 双 locale 模板）+ settings.json + 三件套 vendor 快照与 sync 脚本 + worklog-init（预检 / config 生成 / 全局安装 / dev 文档移除）
+- **M1 模板骨架**：仓根即模板重构（docs/dev/ 隔离）+ 契约文件全套预置（zh / en 双 locale 模板）+ settings.json + 三件套与 project-lifecycle.md 迁入（含 §13 修缮；personal-skills 留目录 stub + 顶层指针表）+ worklog-init（预检 / config 生成 / 全局安装 / dev 文档移除）
 - **M2 ingest 重写**：§8 全部 + scan.sh 可移植版（BSD / GNU 通用写法：`touch -t` + `find -newer`，不用 `date -v` / `-newermt`；每 root 扫描超时保护）
 - **M3 连接器**：github 收集器 + IM 连接器接口定稿 + feishu 参考实现 + worklog-import
 - **M4 收尾**：query / lint / update + README 产品叙事（中英双语）+ GETTING_STARTED + CI（shellcheck + punctuation_check pytest + 三件套 drift 提醒）+ 极简 CONTRIBUTING 与 issue 模板
@@ -239,8 +240,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 ## 16. 开放问题
 
 - pilot 人选待定
-- 发布时机：公开前须过对抗式泄漏审计（含本 PRD 与 git 全历史）
-- personal-skills release tag 首版版本号
+- 发布时机：GitHub 私仓已建（2026-07-11），M5 过对抗式泄漏审计（含本 PRD 与 git 全历史）后翻 public + 开 template 开关
 - 第二个 IM 连接器（slack / 企业微信）的时机与归属（维护者 or 社区）
 
 ## 17. 依赖与许可
@@ -248,13 +248,14 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - lark-cli = 飞书官方 `@larksuite/cli`（npm），文档指引安装，不随包分发
 - markitdown = microsoft/markitdown（MIT），经 `uvx` 调用
 - gh / glab（按需）、uv、python3、bash 3.2+（scan.sh 兼容目标）
-- 三件套快照源自 personal-skills（Apache-2.0，同许可 vendor 合规）
+- 三件套与方法论文档源自 personal-skills 迁入（同为 Apache-2.0，许可一致）
 - 本仓 License：Apache-2.0（与 personal-skills 一致）
 
 ---
 
 ## 修订记录
 
+- **v0.4（2026-07-11）工作流 skill canonical 迁入**：三件套（aireadme / stash / pitfalls）与 project-lifecycle.md 的 canonical 维护地从 personal-skills 迁入本仓（§4.2 三步演化至终态），跨仓 sync 机制整体取消；personal-skills 留目录 stub + 顶层指针表，story-writer 留守，worklog-ingest 公开骨架废弃为指针；GitHub 私仓即刻建立，M5 审计后翻 public。
 - **v0.3（2026-07-11）项目发现与记录同意**：确立「发现 ≠ 记录」（§6.4）。没有人能枚举用户机器上的私有项目（维护者不能、用户自己也未必能），故发现全自动、记录须同意：四级记录级别（detail / summary / presence / exclude）+ init 扫描预览定级 + 新项目安全默认 presence + 项目侧 `.worklogignore` 否决权 + 非 git 项目显式声明 + slug 冲突规则；§9 增补零遥测与脱敏诊断。这是维护者「RAG 排除 / 特定项目不进扫描列表 / 无 git 项目特批」等个人实践的产品化。
 - **v0.2（2026-07-11）通用化修正**：产品定位从「给朋友用」升级为「任何人拿来即用」。四处修正：① 定位与目标用户改为能力定义（硬前提只有 Claude Code + git），朋友画像降为种子用户；② 飞书从一等必选模块降为 IM 连接器接口（§6.3）的首个参考实现，不配 IM 也完全可用；③ 三件套从「init 运行时在线拉取」反转为「vendor 固定版本快照随模板分发」（通用产品必须自包含）；④ 确立「仓根即模板」架构，开发文档隔离 `docs/dev/`，根 CLAUDE.md 为面向用户的产品件；另：契约骨架增加 zh / en 双 locale 模板。
 - **v0.1（2026-07-11）立项定稿**：四轮孵化讨论 + 112 条设计审计收敛。
