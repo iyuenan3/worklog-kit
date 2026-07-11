@@ -2,6 +2,16 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## Unreleased · M3 连接器
+
+### Added
+- `github-scan.sh` GitHub 收集器：发现（user/repos 按 pushed 窗口）+ 精扫（逐仓 commits API，author 按账号维度覆盖全部关联 email）两段式；与本地扫描按 commit hash 跨源去重、本地优先；已在真实账号实测
+- IM 连接器接口 v1（`connectors/README.md`）：check.sh 三态退出码 + fetch.sh digest 行协议 + 隐私契约（record_others 在采集层执行）+ 降级契约（内部自带超时、绝不交互）
+- feishu 参考实现（`connectors/feishu/`，基于官方 `@larksuite/cli` 实测命令面）：warning 行过滤、JSON 字符串正文二次解析、perl alarm 可移植超时、结构未识别时 NOTE 降级
+- `feishu-setup` skill：安装 / 应用凭证 / Device Flow 授权 / macOS keychain-downgrade 权衡 / 会话发现与挑选 / 企业受限优雅禁用 / 自检试拉
+- `worklog-import` skill：markitdown 单文件与批量摄入 `inbox/`（provenance frontmatter + 扫描版 PDF 标注 + 超量先确认）；worklog-init 补 Step 9 存量迁移
+- ingest 接入 github / im 两源（降级矩阵扩展）+ 跨源去重规则
+
 ## Unreleased · M2 ingest 通用版
 
 ### Added

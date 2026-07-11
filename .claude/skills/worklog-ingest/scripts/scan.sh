@@ -74,7 +74,8 @@ scan_repo() {
   # 两步赋值：空仓时 rev-parse 会 stdout 输出 HEAD 且 exit 128，`|| echo` 拼接写法会产出两行破坏行协议
   br=$(git -C "$d" rev-parse --abbrev-ref HEAD 2>/dev/null) || br="unknown"
   printf 'BRANCH %s\n' "$br"
-  out=$(${TIMEOUT_CMD[@]+"${TIMEOUT_CMD[@]}"} git -C "$d" log --branches --tags --fixed-strings \
+  # --abbrev=7 固定短哈希长度：与 github-scan.sh 的 sha[0:7] 对齐，跨源按短哈希去重才不会因长度漂移失配
+  out=$(${TIMEOUT_CMD[@]+"${TIMEOUT_CMD[@]}"} git -C "$d" log --branches --tags --fixed-strings --abbrev=7 \
         --since="$SINCE" --until="$UNTIL" \
         --date=iso-strict --pretty='format:%h|%ad|%an|%s' ${AUTHOR_ARGS[@]+"${AUTHOR_ARGS[@]}"} 2>/dev/null)
   rc=$?

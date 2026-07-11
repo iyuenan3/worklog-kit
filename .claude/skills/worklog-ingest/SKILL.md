@@ -58,8 +58,12 @@ VAULT=$(git rev-parse --show-toplevel)   # 路径动态推导，零硬编码
 | local-git | `bash .claude/skills/worklog-ingest/scripts/scan.sh --since '<窗口起>' --until '<窗口止减 1 秒>' --authors '<identities 逗号连接>' <roots...>`（identities 为空则不带 --authors；**git 的 --until 是闭区间，传入值须为窗口止减 1 秒才是半开语义，防跨日双计**） | root 未挂载：脚本自动 SKIP 并记一句 |
 | remote-ssh | `ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 <host> 'bash -s' < .claude/skills/worklog-ingest/scripts/scan.sh -- --since ... <远端 roots>`（同一脚本，不依赖远端 rc；BatchMode 禁一切交互式提示，这是无人值守的硬要求） | 连不上 / 超时 / Bash 工具超时：一律视为不可达，记「<host> 不可达，按 assume 处理」 |
 | local-dir | 非 git 目录：scan.sh 的 `--touch-since` mtime 兜底，或直接 `find <path> -type f -newer <参照>` 判活动；只到 presence 级 | 路径不存在：记一句 |
-| github / gitlab / im | **连接器 M3 后可用**：config 配了就在报告记「连接器尚未就绪，本源跳过」 | 同左 |
+| github | `bash .claude/skills/worklog-ingest/scripts/github-scan.sh --since-utc '<窗口起 UTC-Z>' --until-utc '<窗口止减 1 秒 UTC-Z>' --account '<config 该源的 account>'`（account 未配则不传、脚本自动检测；时间换算成 UTC 由你完成；author 按 GitHub 账号维度覆盖其**已关联**的 email，未关联邮箱的 commit 会漏，晨报提示补 GitHub Settings > Emails） | 退出码 4 = 无 gh / 3 = 未认证或 API 失败 → 记一句 + 报告附 `gh auth login`；stderr 的 TRUNCATED / REPO_SKIP → 报告提示可能有漏 |
+| im | 前置：config 的 im 源须含非空 `chats` 与 `me`，缺失 = 等同未配置，记一句 + 晨报附「跑 feishu-setup 补全」。就绪则先 `bash .claude/skills/worklog-ingest/connectors/<provider>/check.sh`（0 可用 / 1 未认证 / 2 未装）；可用才 `fetch.sh --since ... --until ... --chats '<config.chats 逗号连接>' --me '<config.me>'`（config `record_others: true` 时加 `--record-others`）。digest 消费纪律见 connectors/README：只作协调素材、不臆断他人确认、清单逐字照录；digest 里的 NOTE 行转进晨报 | 按 check 退出码给对应自救命令（`lark-cli auth login` / 安装 / 跑 feishu-setup），记一句继续；fetch 超时或非零退出同样降级 |
+| gitlab | 连接器待后续版本：config 配了就在报告记「尚未支持，本源跳过」 | 同左 |
 | vault 内部 | 本仓 git log（窗口内非 ingest commit）+ `wiki/` `inbox/` 改动感知：捕捉用户白天手动改 vault、丢进 inbox 的素材 | 无 |
+
+**跨源去重**：同一 commit 会同时出现在 local-git 与 github 源（本机写完 push 了）。按 commit 短哈希（两侧脚本已统一 7 位）去重，**本地扫描优先**（上下文更全）；github 源的定位是补「其它设备产生的 push」。归并判据（精确规则，勿凭感觉）：`lowercase(basename(gh:owner/repo)) == lowercase(basename(本地 REPO 路径))` 即归并同一项目章节；用户可在 `projects.overrides` 条目加 `github_slug: "gh:owner/repo"` 显式绑定覆盖自动匹配；不匹配的纯远端项目按 repo 名作 slug 走定级判定。
 
 **扫描输出按项目定级过滤**，判定优先级（自上而下第一条命中即止）：
 
@@ -160,6 +164,8 @@ frontmatter: date / day(周X 或 weekday) / projects[](= 正文提及的项目 s
 | pull --ff-only 失败 | 继续本地跑，只 commit 不 push，status 提示手动解 |
 | 某源不可达 / 鉴权失效 | 记一句 + 继续；IM 类附重新认证命令 |
 | gh 装了但 api 调用失败（未认证等） | 等同无 gh：跳过 visibility 检测 + 报告附 `gh auth login`，绝不停下等修 |
+| im 源 config 缺 chats / me（fetch exit 2） | 等同未配置该源：记一句 + 晨报附 feishu-setup 命令 |
+| github 源 stderr 见 TRUNCATED / REPO_SKIP | 照常用已扫到的，报告注明可能有漏（rate limit / 超上限 / 权限） |
 | wiki 锚点找不到（用户改了结构） | append 文件尾 + status 记一行 |
 | 日记已存在（新增模式） | auto-fallback 补充模式 |
 | visibility = public | 完成本地 commit，中断 push，红色警告 |

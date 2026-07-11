@@ -17,7 +17,7 @@ sources:
   # More source examples (init generates these from "where does your work happen"):
   # - {type: github, account: your-name, assume: active}
   # - {type: remote-ssh, host: workbox, assume: active, on_unreachable: note}
-  # - {type: im, provider: feishu, via: lark-cli, on_unreachable: note, record_others: false}
+  # - {type: im, provider: feishu, via: lark-cli, chats: ["oc_xxx"], me: "<open_id or name>", on_unreachable: note, record_others: false}   # set up via feishu-setup
   # - {type: local-dir, path: ~/writing/notes, track: mtime}    # non-git projects must be declared explicitly
 
 projects:

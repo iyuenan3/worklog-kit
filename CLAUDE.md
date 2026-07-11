@@ -9,7 +9,8 @@
 |---|---|---|
 | 「初始化 / init」 | 初始化 vault：预检 + config 生成 + 项目定级 + 全局 skill 安装 | worklog-init |
 | 「记录今天 / 昨天 / YYYY-MM-DD / 补充今天 / 更新日记 / 回填 N 天」 | 无人值守 ingest：扫描各数据源编译日记 + 更新 wiki + TODO 盘点 + commit | worklog-ingest |
-| 丢文件进来 / 「收进 inbox」 | 素材转 markdown 入 `inbox/` | worklog-import（即将推出） |
+| 丢文件进来 / 「收进 inbox / 导入这个」 | 素材转 markdown 入 `inbox/` | worklog-import |
+| 「配置飞书 / 接入 IM」 | IM 连接器安装认证向导 | feishu-setup |
 | 「查 X」 | 跨日记 + wiki 检索 | worklog-query（即将推出） |
 | 「检查 / lint」 | 断链 / frontmatter / 凭证扫描 | worklog-lint（即将推出） |
 | 「升级 skill」 | 从 upstream 拉 skill 新版（只动 `.claude/skills/`，永不碰你的数据） | worklog-update（即将推出） |

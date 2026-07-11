@@ -100,6 +100,10 @@ pitfalls 装好后，展示这行全局纪律并**征得同意**后追加进 `~/
 
 问一句「要不要把最近几天回填成简版日记（默认 3 天）」；同意则按 worklog-ingest 的**回填模式**逐天生成（概览 + 时间线 + commit 清单，只回填定级为 detail / summary 的项目，标注「自动回填、信息有限」），已存在的日期跳过。
 
+### Step 9 · 存量迁移（可选，wiki 侧冷启动）
+
+问一句「有没有存量笔记 / 文档目录想转进 vault（Word / PDF / PPT 等）」；有则调 worklog-import 的**批量模式**转换进 `inbox/`（先盘点报数量，超量先确认再跑）。这一步让第一天的 vault 不是空库。
+
 ## 边界
 
 - 本 skill 绝不写入任何凭证；用户给出 token 类信息时引导放 `worklog.config.local.yaml`。
