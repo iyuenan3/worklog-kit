@@ -47,6 +47,12 @@
 - **正确做法**：远程执行显式带环境：`ssh host "bash -lc '<cmd>'"`（login shell 加载 profile 链）；或直接用目标二进制的绝对路径。判定：对比 `ssh host 'echo $PATH'` 与交互登录后的 `echo $PATH`。
 - **触发场景**：SSH 远程扫描 / 探测工具链、CI 往远程机跑命令、cron 触发的远程任务。
 
+### 命令替换 `$()` 里包 perl alarm 超时会失效（子进程持有管道 fd，替换永不返回）
+- **症状**：`out=$(perl -e 'alarm N; exec @ARGV' -- cmd ...)` 到点后 alarm 确实杀了被 exec 的进程，但 `$()` 仍不返回、整个脚本挂死（外层要靠更高层超时才兜住）。同一包装用在**不捕获输出**的条件判断（`if wrapper cmd; then`）不触发。
+- **根因**（已复现验证，2026-07 macOS bash 3.2 + zsh 下 fixture `sleep 120` + 5s alarm 实测）：`$()` 要等 stdout 管道**所有写端 fd 关闭**才返回；SIGALRM 只送到 exec 的直接进程，它派生的孙进程（`bash -lc` 再起的 node/python CLI）继承并持有写端，孙进程活着 fd 就不关。GNU timeout 不踩是因为默认对整个前台进程组发信号，而 macOS 出厂无 timeout。
+- **正确做法**：要捕获输出的超时调用改「落盘 + watchdog」：`( cmd >"$tmpf" 2>/dev/null ) & pid=$!; ( sleep N; kill $pid 2>/dev/null ) & wd=$!; wait $pid; rc=$?; kill $wd 2>/dev/null; wait $wd 2>/dev/null` 再从 tmpf 读。或装 GNU coreutils 用真 timeout。
+- **触发场景**：给外部 CLI（node / python 工具）加超时且要捕获 stdout 时；无人值守脚本里尤其致命（一次网络挂起 = 挂一整夜）。
+
 ---
 
 ## macOS 特有（字节 / locale / 文件系统）
