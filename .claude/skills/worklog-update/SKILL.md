@@ -26,3 +26,4 @@ description: 从 upstream worklog-kit 拉取 skill 新版。用户说「升级 s
 
 - 网络失败 / tag 不存在 → 报告后干净退出，不留半套状态（临时目录必删）。
 - 上游 skill 被移除时不自动删本地对应目录，只提示（删除是用户决定）。
+- **供应链信任模型**：同步进来的 SKILL.md 是给 Claude 的可执行指令，信任边界 = 用户自己配置的 upstream（默认本仓）+ tag 锁定；Step 3 的差异盘点就是应用前的人工审计点。v0.1 不做签名 / 校验和验证，改 `upstream_repo` 指向第三方 fork 前请自行确认其可信。

@@ -14,7 +14,7 @@ MAXDEPTH="${WORKLOG_DISCOVER_DEPTH:-4}"
 [ $# -ge 1 ] || { echo "Usage: bash discover.sh <root> [<root>...]" >&2; exit 2; }
 
 for root in "$@"; do
-  # config 里的 ~ 原样传进来时兜底展开
+  # config 里的 ~ 原样传进来时兜底展开（仅 ~ 与 ~/ 前缀；~user 形式不支持，会落到 SKIP_UNMOUNTED）
   case "$root" in "~") root="$HOME" ;; "~/"*) root="$HOME/${root#\~/}" ;; esac
   if [ ! -d "$root" ]; then
     echo "SKIP_UNMOUNTED $root" >&2
@@ -22,7 +22,8 @@ for root in "$@"; do
   fi
   # 隐藏目录（.archive/.cache 等，.git 除外）与 node_modules 一律 prune：降噪 + 防 root=$HOME 时扫爆
   # -mindepth 1 保护显式给出的 root 本身（即便它是隐藏目录也不被 prune）
-  find "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
+  # -H：root 本身是符号链接时解引用（[ -d ] 跟随符号链接而 find 默认 -P 不跟随，否则静默零输出）
+  find -H "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
     \( -type d \( \( -name '.*' ! -name .git \) -o -name node_modules \) -prune \) -o \
     -type d -name .git -prune -print 2>/dev/null | while IFS= read -r g; do
     d="${g%/.git}"

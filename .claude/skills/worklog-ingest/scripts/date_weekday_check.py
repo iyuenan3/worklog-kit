@@ -12,7 +12,7 @@
     4. 「周X（M/D）」
     5. 「YYYY-MM-DD（周X）」
 
-退出码: 0 = 干净 / 1 = 有不一致 / 2 = 用法错误。
+退出码: 0 = 干净 / 1 = 有不一致 / 2 = 用法错误 / 3 = 有文件读取失败(其余已检测, 与 punctuation_check.py 契约一致)。
 写订正说明时引用旧错请改写成「误配」措辞（如「周六原误配 7/12」），
 不要原样保留错误的「周X（M/D）」配对, 否则本检查会持续命中引用文本。
 """
@@ -39,10 +39,8 @@ def infer_year(text, path):
 
 def check_file(path):
     errors = []
-    try:
-        text = open(path, encoding="utf-8").read()
-    except OSError as e:
-        return [(path, 0, f"读取失败: {e}", "")]
+    # OSError 交给 main 按「文件读取失败」处理: 读不到 ≠ 日期不一致, 不得混入错误计数
+    text = open(path, encoding="utf-8").read()
     year = infer_year(text, path)
 
     def check(y, m, d, wd_char, line_no, ctx):
@@ -87,8 +85,13 @@ def main(argv):
     else:
         files = argv[1:]
     all_errors = []
+    missing = False
     for f in files:
-        all_errors.extend(check_file(f))
+        try:
+            all_errors.extend(check_file(f))
+        except OSError as e:
+            sys.stderr.write(f"⚠️ 文件读取失败(跳过): {f}: {e}\n")
+            missing = True
     if all_errors:
         print(f"✗ {len(all_errors)} 处星期↔日期不一致（改后重跑）")
         for path, ln, msg, ctx in all_errors:
@@ -97,6 +100,8 @@ def main(argv):
             if ctx:
                 print(f"    {ctx}")
         return 1
+    if missing:
+        return 3
     print(f"✓ 星期↔日期映射干净（{len(files)} 文件）")
     return 0
 

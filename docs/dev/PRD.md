@@ -1,6 +1,6 @@
 # PRD · worklog-kit
 
-> 立项：2026-07-11（周六）｜状态：v0.2 调优中
+> 立项：2026-07-11（周六）｜状态：v0.4，M1 至 M4 已完成、M5（pilot 与发布）进行中
 > 本文档是产品需求 + 工程规格的单一真相源，由四轮孵化讨论 + 一轮 112 条多视角设计审计（4 路并行审计 97 条 + 完整性补漏 15 条）收敛而来，调优阶段直接修订本文档。修订记录见文末。
 
 ---
@@ -34,7 +34,7 @@ worklog-kit 是 `project-lifecycle` 方法论的**官方参考实现与 canonica
 
 ### 4.1 仓根即模板（开发件与产品件分离）
 
-**仓库根目录就是用户的 vault 模板**：用户 GitHub「Use this template」建私仓（或 clone）后，打开即是自己的 vault，根 CLAUDE.md 是面向用户的 vault router（产品件）。kit 自身的开发文档（本 PRD、设计审计、贡献指南）隔离在 `docs/dev/`，`worklog-init` 实例化时提供一键移除；开发期路由同样收在 `docs/dev/`，绝不占用产品件位置。
+**仓库根目录就是用户的 vault 模板**：用户 GitHub「Use this template」建私仓（或 clone）后，打开即是自己的 vault，根 CLAUDE.md 是面向用户的 vault router（产品件）。kit 自身的开发文档（本 PRD、开发路由 DEV.md）隔离在 `docs/dev/`（贡献指南 CONTRIBUTING.md 依 GitHub 惯例在仓根），`worklog-init` 实例化时提供一键移除；开发期路由同样收在 `docs/dev/`，绝不占用产品件位置。
 
 ```
 worklog-kit/                      # 仓根 = 用户 vault 模板
@@ -50,7 +50,7 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
 ├── wiki/                         # 知识层（LLM 维护）：index.md + log.md + todos.md + projects/
 ├── inbox/                        # 素材收件箱：人放原料、AI 消化
 ├── docs/methodology.md           # project-lifecycle 方法论全文（v0.4 迁入，产品件，随模板分发）
-├── docs/dev/                     # kit 开发文档（PRD / 审计 / CONTRIBUTING），init 可一键移除
+├── docs/dev/                     # kit 开发文档（PRD / DEV 开发路由），init 可一键移除；CONTRIBUTING.md 在仓根
 └── .claude/skills/
     ├── worklog-init/             # 初始化：环境预检 + config 生成 + 三件套全局安装 + 冷启动
     ├── worklog-ingest/           # config 驱动通用版（核心工程，重写非删改）
@@ -59,6 +59,7 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
     ├── worklog-query/            # 「查 X」显式化
     ├── worklog-lint/             # 断链 / frontmatter / 凭证扫描（标点门为中文 locale 可选项）
     ├── worklog-update/           # 从 upstream 拉 skill 新版（安全边界见 §12）
+    ├── worklog-export/           # 退出通道：去方言导出（§9 第 5 条）
     ├── aireadme/                 # canonical 在此维护（§4.2）
     ├── stash/                    # canonical 在此维护
     └── pitfalls/                 # canonical 在此维护
@@ -123,6 +124,7 @@ projects:
   on_new_project: presence         # 新发现项目的初始级别（安全默认，§6.4）
   overrides:
     - {match: "~/employer/**", level: summary}
+    # 条目可选 github_slug: "gh:owner/repo"，显式绑定远端仓、覆盖跨源归并的自动匹配（§8 去重）
 modules:
   life_section: true             # 日记「生活」段可选
 diary_title_template: "# 工作日记：{year}年{month}月{day}日（{weekday}）"   # 属 locale 模板，可自定义
@@ -161,7 +163,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 | worklog-import | `uvx markitdown` 转换 docx / PDF / pptx 等入 `inbox/`；图片 LLM 描述默认关；ingest 不自动扫 inbox（防耗时爆炸），只引用当天新增条目 |
 | feishu-setup | §6.3 连接器接口的首个参考实现 |
 | worklog-query | 「查 X」跨日记 + wiki 检索行为显式化 |
-| worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；中文 locale 可选项：标点门（punctuation_check.py 随包，`language: zh` 才加载）；个人演化项不进 kit |
+| worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；中文 locale 可选项：标点门（punctuation_check.py）与日期门（date_weekday_check.py），均随包、`language: zh` 才加载；个人演化项不进 kit |
 | worklog-update | 镜像同步 `.claude/skills/` 白名单路径（含三件套统一经此更新），其余 hard deny（§12）；上游地址可经 config `upstream_repo` 覆盖（fork 用户） |
 | worklog-export | 退出通道（§9.5）：wikilink 转普通链接 + 移除 Tasks 查询块与行尾元数据 emoji，产物为不依赖工具链的纯 markdown |
 
@@ -171,7 +173,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 **保留骨架（方法论本体，原样继承）**：
 - 5 步流程（自扫 → 解析 → 一行回执 → 自主跑 → 晨起报告）与时间窗口公式 [D day_boundary, D+1 day_boundary)
-- 三模式防覆盖（新增 / 补充 / 更新 + 触发语与文件实测共同决定 + auto-fallback）
+- 四模式防覆盖（新增 / 补充 / 更新 / 回填 + 触发语与文件实测共同决定 + auto-fallback）
 - 无人值守铁律 + 默认值表机制（表内容由 config 生成）
 - judgment 提炼、四元素、(B) 类自维护工作记录（四类简化为两类）
 - index 头部封顶、项目页 frontmatter 刷新、TODO 盘点
@@ -189,7 +191,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 1. **权限**：模板随附 `.claude/settings.json`，allow 清单精确列出 ingest 用到的命令模式（git / ssh / python3 / find / date 等），不开 bypassPermissions；README troubleshooting 写明首跑弹权限的处理
 2. **公开仓双检**：init 时 + 每晚 push 前 `gh api` 查 visibility，发现 public 立即中断 push 并红色警告（use-as-template 误选 public、日后手动改公开都在此拦截）
-3. **凭证隔离**：config 两层（base 入 git 零凭证 / local 不入 git）；.gitignore 预置 `.ingest-status.md`、`.ingest.lock`、`worklog.config.local.yaml`、`.obsidian/workspace*`、`.env*`、`*.key`、`*.pem`、`id_rsa*`、`credentials*`、`GETTING_STARTED.md`、`.DS_Store`
+3. **凭证隔离**：config 两层（base 入 git 零凭证 / local 不入 git）；.gitignore 预置 `.ingest-status.md`、`.ingest.lock`、`.ingest-history.log`、`worklog.config.local.yaml`、`export/`、`.obsidian/workspace*`、`.env*`、`*.key`、`*.pem`、`id_rsa*`、`id_ed25519*`、`credentials*`、`GETTING_STARTED.md`、`.DS_Store`、`node_modules/`、`__pycache__/`、`*.pyc`
 4. **IM 最小记录**（所有连接器统一）：默认只记用户本人发的消息，记录他人需显式 `record_others: true` 且 README「IM 数据使用须知」写明合规责任（被记录同事、雇主信息安全政策、私仓仍在第三方服务器）；不臆断对方确认、清单类逐字照录等纪律进 skill 本体
 5. **数据所有权**：diaries / wiki 是标准 markdown；提供 worklog-export（去 Tasks 语法 + wikilink 转普通链接）作退出通道
 6. **零遥测 + 脱敏诊断**：kit 不回传任何数据，维护者永远看不到用户的项目与日记；报 issue 用脱敏诊断输出（环境版本 + 各数据源匿名化状态，项目名与路径经占位符化），issue 模板只收这份输出，杜绝用户为求助而贴出私有项目信息
@@ -210,6 +212,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - config `schema_version`：skill 启动断言版本，update 后不匹配则输出需补字段 + 默认值；版本过旧给明确报错不静默异常
 - 三件套随本仓 release tag 一体发版，worklog-update 统一从本仓拉取（真相源归一，无跨仓同步）
 - update 后自动 dry-run 检测 wiki 结构与新版 skill 预期的兼容性，不兼容输出手动调整清单
+- 供应链信任模型：clone-and-replace 的信任边界 = 用户配置的 upstream + tag 锁定，同步前差异盘点即人工审计点；v0.1 不做签名 / 校验和验证（同步物是 LLM 可执行指令，换第三方 upstream 须自行确认可信），签名校验列 roadmap
 
 ## 13. 三件套随迁修缮（M1 迁入时就地做）
 

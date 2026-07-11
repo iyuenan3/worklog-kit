@@ -2,7 +2,20 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
-## Unreleased · M4 收尾
+## Unreleased · 全仓 review 修复（M5 前，2026-07-11）
+
+18 条确认发现（8 维审计 + 逐条对抗验证）全部修复：
+
+### Fixed
+- **P1**：`scan.sh` 与 `discover.sh` 的 find 加 `-H`（root 为符号链接时静默零输出、exit 0）；feishu `fetch.sh` 捕获解析器退出码（崩溃时输出 NOTE + 非零退出，原为静默丢整个会话）；标点门剥离图片语法 `![alt](url)`（原残留孤儿 `!` 误报）；`lint.py` 日记 frontmatter 改逐行读到闭合 `---`（原 `read(400)` 截断长 frontmatter 误报缺失）；worklog-init 流程标题改 9 步（原写「7 步」会让执行者漏跑 Step 8 与 9）；init Step 7 移除 `docs/dev/` 后同步清理 README 双语与 CONTRIBUTING 的引用（原留三处死链）
+- **P2**：ingest SKILL 的 im 降级列去 feishu 硬编码（自救命令改为转发连接器 check.sh 自带输出）；错误表「fetch exit 2」误导口径改为「Step A 前置检查拦截」；`date_weekday_check.py` 文件读取失败改退出码 3（与标点门契约对齐，原误计入不一致）；feishu `check.sh` 补 python3 探测（原假绿）；settings.json 摘除飞书专属权限三条（feishu-setup 启用时追加，产品级清单保持连接器无关）；`.gitignore` 补 `export/`；config 双语模板与 PRD 补 `github_slug` 文档；PRD 修 §4.1 树图（CONTRIBUTING 位置 + 补 worklog-export）、§7 补日期门、§8 四模式、§9.3 gitignore 清单、头部状态刷新至 v0.4；本文件三个里程碑标题补齐日期
+
+### Added
+- `templates/locale/en/wiki/projects/.gitkeep`：en locale 模板成套（原缺 projects/ 目录）
+- `tests/test_scan_discover.py`：scan.sh 与 discover.sh 的 fixture 级行为测试（含符号链接根回归用例）
+- worklog-update 与 PRD §12 补供应链信任模型说明（tag 锁定 + 差异盘点即审计点，v0.1 无签名校验）
+
+## M4 收尾（2026-07-11）
 
 ### Added
 - `worklog-lint`：lint.py 机械项（契约锚点 / 凭证扫描 / 断链剥代码段 / frontmatter / log 轮转阈值，🔴🟡 退出码约定）+ zh 写作门编排（复用标点门与日期门，缺脚本优雅跳过）
@@ -13,7 +26,7 @@ worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.c
 ### Removed
 - 「三件套 drift 提醒 CI」不再需要：v0.4 canonical 迁入本仓后无跨仓同步，该项随之废止
 
-## Unreleased · M3 连接器
+## M3 连接器（2026-07-11）
 
 ### Added
 - `github-scan.sh` GitHub 收集器：发现（user/repos 按 pushed 窗口）+ 精扫（逐仓 commits API，author 按账号维度覆盖全部关联 email）两段式；与本地扫描按 commit hash 跨源去重、本地优先；已在真实账号实测
@@ -23,7 +36,7 @@ worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.c
 - `worklog-import` skill：markitdown 单文件与批量摄入 `inbox/`（provenance frontmatter + 扫描版 PDF 标注 + 超量先确认）；worklog-init 补 Step 9 存量迁移
 - ingest 接入 github / im 两源（降级矩阵扩展）+ 跨源去重规则
 
-## Unreleased · M2 ingest 通用版
+## M2 ingest 通用版（2026-07-11）
 
 ### Added
 - `worklog-ingest` skill 通用重写（config 驱动、零硬编码、约 190 行）：四模式（新增 / 补充 / 更新 / 回填）+ 无人值守铁律 + config 生成的默认值表 + 分级记录过滤（detail / summary / presence / exclude + 新项目待定级）+ 降级矩阵 + git 安全三件（ff-only 拉取 / `.ingest.lock` / 锚点 append 兜底）+ visibility 检测 + `.ingest-history.log` 观测

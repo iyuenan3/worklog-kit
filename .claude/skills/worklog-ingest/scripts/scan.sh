@@ -99,13 +99,15 @@ EOF
 }
 
 for root in "$@"; do
+  # 仅展开 ~ 与 ~/ 前缀；~user 形式不支持（会落到 SKIP_UNMOUNTED）
   case "$root" in "~") root="$HOME" ;; "~/"*) root="$HOME/${root#\~/}" ;; esac
   if [ ! -d "$root" ]; then
     echo "SKIP_UNMOUNTED $root" >&2
     continue
   fi
   # 与 discover.sh 同一发现逻辑：prune 隐藏目录（.git 除外）与 node_modules；-mindepth 1 保护显式 root
-  find "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
+  # -H：root 本身是符号链接时解引用（[ -d ] 跟随符号链接而 find 默认 -P 不跟随，否则静默零输出）
+  find -H "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
     \( -type d \( \( -name '.*' ! -name .git \) -o -name node_modules \) -prune \) -o \
     -type d -name .git -prune -print 2>/dev/null | sort | while IFS= read -r g; do
     scan_repo "${g%/.git}"

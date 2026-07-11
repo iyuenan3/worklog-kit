@@ -103,13 +103,22 @@ def main():
                     (hard if tag == "🔴" else soft).append(
                         f"{cfg}:{i}: 疑似凭证（{'该文件入 git，绝不能放凭证' if tag == '🔴' else 'local 层不入 git，但仍建议复核'}）")
 
-    # 3. diary frontmatter
+    # 3. diary frontmatter（逐行读到闭合 ---，不用定长 read(N)：长 frontmatter 会被截断而误报缺失）
     for p in md_files(root, "diaries"):
         rel = os.path.relpath(p, root)
-        head = open(p, encoding="utf-8", errors="replace").read(400)
         ok = False
-        if head.startswith("---") and head.count("---") >= 2:
-            ok = "date:" in head.split("---")[1]
+        with open(p, encoding="utf-8", errors="replace") as fh:
+            if fh.readline().strip() == "---":
+                seen_date = False
+                for _ in range(200):
+                    line = fh.readline()
+                    if not line:
+                        break
+                    if line.strip() == "---":
+                        ok = seen_date
+                        break
+                    if line.startswith("date:"):
+                        seen_date = True
         if not ok:
             hard.append(f"{rel}: frontmatter 缺失或缺 date")
 
@@ -119,7 +128,7 @@ def main():
         for f in sorted(os.listdir(projdir)):
             if not f.endswith(".md"):
                 continue
-            head = open(os.path.join(projdir, f), encoding="utf-8", errors="replace").read(600)
+            head = open(os.path.join(projdir, f), encoding="utf-8", errors="replace").read(2000)
             missing = [k for k in ("last_updated", "source_count", "diaries") if k not in head]
             if missing:
                 soft.append(f"wiki/projects/{f}: frontmatter 缺 {'/'.join(missing)}")

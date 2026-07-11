@@ -18,7 +18,7 @@
 4. 半角括号 ( ) 前邻 CJK 或括号内含 CJK（func(x) 纯 ASCII 括号不误报）
 5. 加粗段 **X** 后跟半角 , : ; ! ?
 保护区（不检测）: frontmatter（开头第一对 ---，未闭合则不当 frontmatter）/ 代码围栏 ```（未闭合则告警并当 prose）/
-行内代码 `...` / [[wikilink]] / [文本](链接) / 裸 URL（URL 在 CJK / 中文标点边界停，不吞 prose）/ conventional-commit 主题前缀 type(scope):（Git 提交段 verbatim）。
+行内代码 `...` / [[wikilink]] / [文本](链接) 与 ![alt](图片) / 裸 URL（URL 在 CJK / 中文标点边界停，不吞 prose）/ conventional-commit 主题前缀 type(scope):（Git 提交段 verbatim）。
 """
 import re
 import sys
@@ -28,7 +28,7 @@ CJK = r'々〇㐀-䶿一-鿿豈-﫿①-⑳㈠-㈩'
 
 _RE_INLINE_CODE = re.compile(r'`[^`]*`')
 _RE_WIKILINK = re.compile(r'\[\[[^\]]*\]\]')
-_RE_MDLINK = re.compile(r'\[[^\]]*\]\([^)]*\)')
+_RE_MDLINK = re.compile(r'!?\[[^\]]*\]\([^)]*\)')  # !? 连图片语法 ![alt](url) 的前导 ! 一起剥，防孤儿 ! 误报
 # URL 结尾在空白 / 中文 / 中文标点 / 半角逗号分号处停，避免吞掉紧邻的中文 prose（如 "见 https://x.com,已部署"）
 _RE_URL = re.compile(r'https?://[^\s' + CJK + r'，。、；：！？（）「」,;]+')
 

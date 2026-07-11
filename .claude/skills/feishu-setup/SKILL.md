@@ -15,6 +15,16 @@ npm i -g @larksuite/cli && bash -lc 'lark-cli --version'
 
 无 npm → 先装 Node（brew / nvm / 官网任一）。**此后一切 lark-cli 调用都经 `bash -lc`**（node 的 PATH 注入常在交互 rc 里，非交互环境会找不到命令）。
 
+装好后把飞书专属权限追加进 vault 的 `.claude/settings.json` allow 清单（产品级清单保持连接器无关，谁启用谁追加；追加前先查重）：
+
+```json
+"Bash(lark-cli:*)",
+"Bash(npm i -g @larksuite/cli)",
+"Bash(npm install -g @larksuite/cli)"
+```
+
+深夜无人值守的 ingest 调 lark-cli 免确认靠第一行；后两行供日后重装。
+
 ## Step 2 · 应用凭证与授权
 
 1. `lark-cli config init` 需要一个飞书应用的 app-id / app-secret：个人租户可在飞书开放平台建自建应用（开通 im 读取等所需 scope）；**企业租户受管时可能不允许自建应用或不给 scope，这一步卡住 = 你的企业不支持本连接器**，此时在 `worklog.config.yaml` 里删掉或注释 feishu 源即可，ingest 其余一切照常（不影响主流程）

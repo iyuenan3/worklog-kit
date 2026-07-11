@@ -23,7 +23,7 @@ sources:
 projects:
   default_level: detail        # overrides 条目未显式给 level 时用此级别（detail / summary / presence / exclude）
   on_new_project: presence     # 新发现项目的初始级别（安全默认：只记存在与 commit 数，晨报待定级）
-  overrides: []                # 按路径批量定级，如 {match: "~/employer/**", level: summary}
+  overrides: []                # 按路径批量定级，如 {match: "~/employer/**", level: summary}；可选 github_slug: "gh:owner/repo" 显式绑定远端仓（跨源归并）
 
 modules:
   life_section: true           # 日记「生活」段开关

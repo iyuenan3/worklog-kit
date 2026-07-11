@@ -103,7 +103,14 @@ for line in open(sys.argv[3], encoding="utf-8", errors="replace"):
 if not saw_json:
     print("NOTE message structure unrecognized, calibrate fetch.sh against actual lark-cli output")
 PYEOF
+  py_rc=$?
   rm -f "$tmpf"
+  if [ "$py_rc" -ne 0 ]; then
+    # 解析器崩溃必须显式降级：无 NOTE + 退出 0 = 静默丢一整个会话的数据（违反上方降级契约）
+    printf 'NOTE chat %s: message parser failed (python3 exit %s)\n' "$chat" "$py_rc"
+    echo "chat $chat: python3 parser failed (exit $py_rc)" >&2
+    return 1
+  fi
   return 0
 }
 

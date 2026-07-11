@@ -4,6 +4,9 @@
 .ingest-history.log
 GETTING_STARTED.md
 
+# 导出产物（worklog-export 输出到 export/<日期>/，导出后自行移走，不入 git）
+export/
+
 # 敏感配置层（凭证只放这份）
 worklog.config.local.yaml
 

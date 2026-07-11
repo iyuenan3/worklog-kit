@@ -23,7 +23,7 @@ sources:
 projects:
   default_level: detail        # level used when an overrides entry omits `level` (detail / summary / presence / exclude)
   on_new_project: presence     # initial level for newly discovered projects (safe default: existence + commit count only)
-  overrides: []                # bulk leveling by path, e.g. {match: "~/employer/**", level: summary}
+  overrides: []                # bulk leveling by path, e.g. {match: "~/employer/**", level: summary}; optional github_slug: "gh:owner/repo" pins the remote repo (cross-source merge)
 
 modules:
   life_section: true           # "Life" section in the diary

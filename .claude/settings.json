@@ -47,9 +47,6 @@
       "Bash(gh api:*)",
       "Bash(gh search:*)",
       "Bash(uvx markitdown:*)",
-      "Bash(lark-cli:*)",
-      "Bash(npm i -g @larksuite/cli)",
-      "Bash(npm install -g @larksuite/cli)",
       "Bash(export TZ=*)"
     ]
   }
