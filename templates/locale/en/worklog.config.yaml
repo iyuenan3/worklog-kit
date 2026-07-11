@@ -1,0 +1,33 @@
+# worklog-kit configuration (committed to git; credentials go in worklog.config.local.yaml, which is gitignored)
+# Run /worklog-init to generate this interactively; afterwards edits take effect immediately (read on every ingest run).
+schema_version: 1
+
+timezone: UTC                  # diary attribution timezone (asked during init)
+day_boundary: "07:00"          # date split line: work between 00:00 and this time belongs to the previous day
+language: en                   # zh / en: skeleton locale, writing conventions, punctuation gate
+
+identities: []                 # git author filter: every email / name you have committed with (prefilled by init)
+
+sources:
+  # Local project scan: auto-discovers git repos under roots (limited depth); an unmounted root is noted and skipped
+  - type: local-git
+    roots: [~/projects]
+    exclude: []                # globs, e.g. "**/tmp-*"
+    assume: active
+  # More source examples (init generates these from "where does your work happen"):
+  # - {type: github, account: your-name, assume: active}
+  # - {type: remote-ssh, host: workbox, assume: active, on_unreachable: note}
+  # - {type: im, provider: feishu, via: lark-cli, on_unreachable: note, record_others: false}
+  # - {type: local-dir, path: ~/writing/notes, track: mtime}    # non-git projects must be declared explicitly
+
+projects:
+  default_level: detail        # default recording level for leveled projects: detail / summary / presence / exclude
+  on_new_project: presence     # initial level for newly discovered projects (safe default: existence + commit count only)
+  overrides: []                # bulk leveling by path, e.g. {match: "~/employer/**", level: summary}
+
+modules:
+  life_section: true           # "Life" section in the diary
+
+index_recent_days: 3           # how many days of summaries the wiki index header keeps
+
+diary_title_template: "# Work diary: {year}-{month}-{day} ({weekday})"

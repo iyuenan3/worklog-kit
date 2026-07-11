@@ -1,0 +1,12 @@
+# 敏感配置层示例。复制为 worklog.config.local.yaml 后使用（该文件名已被 .gitignore 排除，绝不入 git）。
+# 读取规则：skill 加载 worklog.config.yaml 后，用本文件的同名键覆盖。
+# 原则：任何 token / 密码 / 私有 URL / 内网主机名，只放这里，绝不写进 worklog.config.yaml。
+#
+# 说明：v0.1 内置的连接器都不需要在这里存凭证
+#   - remote-ssh 用你的 SSH key（~/.ssh/，由 ssh 自己管理）
+#   - feishu 用 lark-cli 自己的认证存储（系统钥匙串 / 其配置目录）
+#   - github 用 gh CLI 的认证
+# 本层为未来连接器与你的自定义字段预留。示例：
+#
+# my_custom_source:
+#   api_token: "xxxx"

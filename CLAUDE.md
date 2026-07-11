@@ -1,31 +1,31 @@
-# CLAUDE.md · worklog-kit（router）
+# CLAUDE.md · 我的 worklog（router）
 
-> worklog-kit = personal-skills `project-lifecycle.md` 方法论的官方参考实现：把源自维护者私有 worklog 的工作流（三层架构 + 睡前无人值守 ingest）产品化成**任何 Claude Code 用户拿来即用**的通用开源项目。
-> **真相源是 `PRD.md`**（需求 + 工程规格 + 审计收敛结论），本文件只放路由与红线。
+> 本仓 = 你的「父项目」vault：三层架构（日记只追加 / wiki 由 LLM 维护 / schema 人 + LLM 共演）的个人知识库 + 工作日记系统，由 [worklog-kit](https://github.com/iyuenan3/worklog-kit) 驱动。
+> 配置在 `worklog.config.yaml`（凭证只放 `worklog.config.local.yaml`，不入 git）。方法论全文见 `docs/methodology.md`。
 
-## 当前阶段
+## 路由（触发语 → 行为）
 
-- 2026-07-11 立项（最小骨架）；同日 PRD 迭代至 v0.4（v0.2 通用化：任何人可用、IM 连接器化、仓根即模板；v0.3 发现 ≠ 记录：四级定级；v0.4 三件套与 project-lifecycle 方法论 canonical 迁入本仓。修订记录见 PRD 文末）。GitHub 私仓 `iyuenan3/worklog-kit`（M5 审计后翻 public + 开 template）。
-- 下一步按 PRD §15 里程碑推进：M1 模板骨架 → M2 ingest 重写 → M3 连接器 → M4 收尾 → M5 pilot 与发布。
-- **M1 起仓根即用户 vault 模板**：本文件将被面向用户的产品 router 替换，开发文档（含 PRD）迁入 `docs/dev/`。开工时先用 `/aireadme` 建本仓 AIREADME/。
+| 触发 / 任务 | 行为 | skill |
+|---|---|---|
+| 「初始化 / init」 | 初始化 vault：预检 + config 生成 + 项目定级 + 全局 skill 安装 | worklog-init |
+| 「记录今天 / 昨天 / 补充今天 / 更新日记」 | 无人值守 ingest：扫描各数据源编译日记 + 更新 wiki + TODO 盘点 + commit | worklog-ingest（即将推出） |
+| 丢文件进来 / 「收进 inbox」 | 素材转 markdown 入 `inbox/` | worklog-import（即将推出） |
+| 「查 X」 | 跨日记 + wiki 检索 | worklog-query（即将推出） |
+| 「检查 / lint」 | 断链 / frontmatter / 凭证扫描 | worklog-lint（即将推出） |
+| 「升级 skill」 | 从 upstream 拉 skill 新版（只动 `.claude/skills/`，永不碰你的数据） | worklog-update（即将推出） |
 
-## 路由
-
-| 任务 | 读 |
-|---|---|
-| 任何需求 / 规格 / 契约问题 | `PRD.md`（§5 冻结契约、§6.3 IM 连接器接口、§8 ingest 重写规格、§9 安全隐私） |
-| 方法论背景 | `../personal-skills/project-lifecycle.md`（M1 迁入本仓 `docs/methodology.md`，之后以本仓为准） |
-| 私有版 ingest 参考实现 | `../worklog/.claude/skills/worklog-ingest/`（仅开发期本机参考，见下红线；此路径不得写进任何产品件） |
+> 日期边界：00:00 至 config `day_boundary`（默认 07:00）算前一天。时区按 config `timezone`。
 
 ## 红线
 
-- **本仓一切内容默认将来公开**：任何文件（含文档、示例、注释、commit message）不得含维护者个人信息、客户 / 雇主名、具名设备、IM 群坐标、真实同事称呼。从私有 worklog 借鉴实现时只搬骨架不搬数据。公开发布前须过对抗式泄漏审计（含 git 全历史）。
-- **通用性红线**（PRD 原则 2）：核心流程不得引入特定 IM / 托管平台 / 语言 / 公司环境假设；特定能力一律下沉为连接器或 locale 模板。评审任何改动先问一句：一个用 Slack、说英文、不在中国的陌生用户拿到后还能用吗。
-- 冻结契约（PRD §5）改动必须同步 PRD，并评估对已铺出去的用户 vault 的兼容性。
-- 三件套（aireadme / stash / pitfalls）与 project-lifecycle 方法论 v0.4 起 canonical 在本仓维护（M1 完成迁入；personal-skills 只留指针不再更新），修改直接在本仓做，同样受通用性红线约束。
-- 中文文案用中文全角标点，绝不使用破折号（全局规范）。
+- **三层所有权**：`diaries/` 只追加、绝不覆盖历史；`wiki/` 由 ingest 维护，手改请保留段落锚点（index 三段标题 / log 锚点注释 / todos 分区标题）；schema 演化记进 `AIREADME/`（决策理由进 DECISIONS）。
+- **隐私**：本仓必须保持**私有**（ingest push 前自动检测 visibility）；凭证 / 私钥绝不入 git（.gitignore 已预置兜底）；IM 源默认只记你自己发的消息。
+- `inbox/` 是原料收件箱：人放、AI 消化，消化完可归档删除。
 
-## 惯例
+## 维护
 
-- git 直接提 `main`。
-- 目录命名遵循契约：`diaries/`（复数）、`wiki/`、`inbox/`。
+- 结构演化是这套系统的设计预期：除上面锚点与契约文件外，一切按你的用法长；变了就用 `/aireadme` 更新 `AIREADME/`。
+- 新项目 / 新设备 / 新 IM：在 `worklog.config.yaml` 的 `sources` 加一条即可，级别不确定就先 `presence`。
+
+---
+> 开发 worklog-kit 本体（而非使用本 vault）？读 `docs/dev/`。作为 vault 用户可忽略本行（init 移除 dev 文档时会一并清理）。

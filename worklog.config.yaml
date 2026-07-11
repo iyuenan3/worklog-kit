@@ -1,0 +1,33 @@
+# worklog-kit 配置（入 git；任何凭证 / 密钥放 worklog.config.local.yaml，那份被 .gitignore 排除）
+# 首次使用跑 /worklog-init 交互生成；之后手改即生效（ingest 每次运行时读取）。
+schema_version: 1
+
+timezone: Asia/Shanghai        # 日记归属时区（init 时询问）
+day_boundary: "07:00"          # 日期分割线：00:00 至该时刻的工作归前一天（按你的作息调整）
+language: zh                   # zh / en：骨架 locale、写作规范、标点门按此切换
+
+identities: []                 # git 署名过滤：你 commit 用过的全部 email / 名字（init 自动预填）
+
+sources:
+  # 本机项目扫描：roots 下有限深度自动发现 git 仓；未挂载的 root 记一句跳过（常态路径）
+  - type: local-git
+    roots: [~/projects]
+    exclude: []                # glob 排除，如 "**/tmp-*"
+    assume: active
+  # 其余源示例（init 按「你的工作都发生在哪」逐个生成）：
+  # - {type: github, account: your-name, assume: active}
+  # - {type: remote-ssh, host: workbox, assume: active, on_unreachable: note}
+  # - {type: im, provider: feishu, via: lark-cli, on_unreachable: note, record_others: false}
+  # - {type: local-dir, path: ~/writing/notes, track: mtime}    # 非 git 项目须显式声明
+
+projects:
+  default_level: detail        # 已定级项目的默认记录级别：detail / summary / presence / exclude
+  on_new_project: presence     # 新发现项目的初始级别（安全默认：只记存在与 commit 数，晨报待定级）
+  overrides: []                # 按路径批量定级，如 {match: "~/employer/**", level: summary}
+
+modules:
+  life_section: true           # 日记「生活」段开关
+
+index_recent_days: 3           # wiki index 头部保留最近几天的摘要
+
+diary_title_template: "# 工作日记：{year}年{month}月{day}日（{weekday}）"

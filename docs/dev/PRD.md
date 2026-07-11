@@ -231,11 +231,11 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 ## 15. 里程碑
 
-- **M1 模板骨架**：仓根即模板重构（docs/dev/ 隔离）+ 契约文件全套预置（zh / en 双 locale 模板）+ settings.json + 三件套与 project-lifecycle.md 迁入（含 §13 修缮；personal-skills 留目录 stub + 顶层指针表）+ worklog-init（预检 / config 生成 / 全局安装 / dev 文档移除）
+- **M1 模板骨架**（✅ 2026-07-11 完成，含四视角对抗验证 38 条修复）：仓根即模板重构（docs/dev/ 隔离）+ 契约文件全套预置（zh 默认 + en locale 全套：wiki 三件 / CLAUDE / AGENTS / AIREADME 12 件 / config）+ settings.json + 三件套与 project-lifecycle.md 迁入（含 §13 修缮；**personal-skills 侧 stub 顺延至 kit 翻 public 时落地**，避免公开仓指向 404 私仓）+ worklog-init（预检 / config 生成 / 扫描预览定级 / 全局安装 / dev 文档移除；冷启动回填待 M2 ingest 就绪后接入）
 - **M2 ingest 重写**：§8 全部 + scan.sh 可移植版（BSD / GNU 通用写法：`touch -t` + `find -newer`，不用 `date -v` / `-newermt`；每 root 扫描超时保护）
 - **M3 连接器**：github 收集器 + IM 连接器接口定稿 + feishu 参考实现 + worklog-import
 - **M4 收尾**：query / lint / update + README 产品叙事（中英双语）+ GETTING_STARTED + CI（shellcheck + punctuation_check pytest + 三件套 drift 提醒）+ 极简 CONTRIBUTING 与 issue 模板
-- **M5 pilot 与发布**：两位种子用户试用（一个飞书重度 + 一个纯本机），企业飞书授权实测，按摩擦迭代；公开发布前过对抗式泄漏审计
+- **M5 pilot 与发布**：种子用户试用（一个飞书重度 + 一个纯本机 / 无 IM；条件允许再加一个非飞书 IM 用户），企业飞书授权实测，`.claude/settings.json` allow 清单生效性实测（`:*` 前缀语法），按摩擦迭代；公开发布前过对抗式泄漏审计（含 git 历史 Author email 处理：squash 或改 noreply 地址；personal-skills 侧 stub 指针同日落地）
 
 ## 16. 开放问题
 
