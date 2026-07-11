@@ -8,7 +8,7 @@ worklog-kit is a turn-key template for a **personal project brain**: one "parent
 
 ## What it does
 
-- **Compiles your diary nightly, unattended**: scans everywhere your work happens (local multi-root and multi-disk, GitHub / GitLab, remote machines, IM coordination), adds your one-line brain-dump, and writes a structured, reviewable diary
+- **Compiles your diary nightly, unattended**: scans everywhere your work happens (local multi-root and multi-disk, GitHub, remote machines, IM coordination; GitLab planned), adds your one-line brain-dump, and writes a structured, reviewable diary
 - **Knowledge settles automatically**: project activity, decisions, and lessons flow into a wiki, cross-linked and queryable
 - **Never blocks**: your trigger message is the entire input; any failing source degrades to one line in the morning report
 - **Privacy-tight out of the box**: private repo enforced (visibility check before every push), credential isolation, IM sources record only your own messages by default, and every discovered project needs your consent level before detailed recording
@@ -28,7 +28,8 @@ worklog-kit is a turn-key template for a **personal project brain**: one "parent
 ## Requirements
 
 - Hard requirements: a Claude Code subscription, basic git and terminal use (macOS / Linux; Windows via WSL, experimental)
-- Optional: GitHub / GitLab CLI (platform collector), an IM connector (Feishu via the official `@larksuite/cli` ships in v0.1; the interface is open for Slack and others), Obsidian (recommended viewer)
+- Base environment: git ≥ 2.20, python3 ≥ 3.8, bash ≥ 3.2 (stock macOS qualifies)
+- Optional: GitHub CLI (platform collector; GitLab planned), an IM connector (Feishu via the official `@larksuite/cli` ships in v0.1; the interface is open for Slack and others), Obsidian (recommended viewer)
 - Language: zh / en skeleton locales, chosen at init
 
 ## Troubleshooting

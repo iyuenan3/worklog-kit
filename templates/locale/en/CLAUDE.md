@@ -28,3 +28,6 @@
 
 - Structural evolution is the design intent: apart from the anchors and contract files above, let everything grow with your usage; when it changes, run `/aireadme` to update `AIREADME/`.
 - New project / device / IM: add one entry under `sources` in `worklog.config.yaml`; when unsure about a level, start with `presence`.
+
+---
+> Developing worklog-kit itself (rather than using this vault)? Read `docs/dev/`. As a vault user you can ignore this line (init removes it together with the dev docs).

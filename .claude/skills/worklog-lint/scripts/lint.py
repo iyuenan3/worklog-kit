@@ -83,7 +83,8 @@ def main():
             rel = os.path.relpath(p, root)
             text = open(p, encoding="utf-8", errors="replace").read()
             for i, line in enumerate(text.splitlines(), 1):
-                if SECRET_RE.search(line):
+                # 行内 lint:ignore 标记豁免（写文档示例用；仅正文区生效，config 不豁免）
+                if SECRET_RE.search(line) and "lint:ignore" not in line:
                     hard.append(f"{rel}:{i}: 疑似明文凭证，立即移除")
             # 断链扫描剥掉代码块与行内代码（语法示例不算链接）；凭证扫描保留全文不剥
             text_links = re.sub(r"```.*?```", "", text, flags=re.S)
@@ -106,6 +107,10 @@ def main():
     # 3. diary frontmatter（逐行读到闭合 ---，不用定长 read(N)：长 frontmatter 会被截断而误报缺失）
     for p in md_files(root, "diaries"):
         rel = os.path.relpath(p, root)
+        # 只对日记命名的文件做硬检查：Obsidian 同步冲突副本等杂件不该把 lint 卡成红
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}\.md", os.path.basename(p)):
+            soft.append(f"{rel}: 非日记命名（同步冲突副本或手工文件？），跳过 frontmatter 检查")
+            continue
         ok = False
         with open(p, encoding="utf-8", errors="replace") as fh:
             if fh.readline().strip() == "---":
@@ -133,12 +138,17 @@ def main():
             if missing:
                 soft.append(f"wiki/projects/{f}: frontmatter 缺 {'/'.join(missing)}")
 
-    # 5. log.md 轮转阈值
+    # 5. 增长文件阈值（log 轮转 + index 日记表年归档）
     logp = os.path.join(root, "wiki", "log.md")
     if os.path.isfile(logp):
         n = sum(1 for _ in open(logp, encoding="utf-8", errors="replace"))
         if n > 1500:
             soft.append(f"wiki/log.md: {n} 行，超过 1500，建议按年轮转为 log-YYYY.md")
+    idxp = os.path.join(root, "wiki", "index.md")
+    if os.path.isfile(idxp):
+        n = sum(1 for _ in open(idxp, encoding="utf-8", errors="replace"))
+        if n > 800:
+            soft.append(f"wiki/index.md: {n} 行，日记表建议按年归档（旧年份行移入 index-<YYYY>.md），防无限增长")
 
     for msg in hard:
         print(f"🔴 {msg}")

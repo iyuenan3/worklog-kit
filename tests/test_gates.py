@@ -91,6 +91,26 @@ def test_lint_missing_anchor_is_hard(tmp_path):
     assert run(LINT, "--vault", tmp_path).returncode == 1
 
 
+def test_lint_conflict_copy_is_soft(tmp_path):
+    # Obsidian 同步冲突副本等非日记命名文件不该把 lint 卡成红
+    _mk_vault(tmp_path)
+    (tmp_path / "diaries" / "2026-07-10 conflicted copy.md").write_text(
+        "no frontmatter\n", encoding="utf-8")
+    r = run(LINT, "--vault", tmp_path)
+    assert r.returncode == 0
+    assert "非日记命名" in r.stdout
+
+
+def test_lint_ignore_comment_suppresses_secret(tmp_path):
+    _mk_vault(tmp_path)
+    (tmp_path / "diaries" / "2026-07-12.md").write_text(
+        '---\ndate: 2026-07-12\n---\n示例：api_key = "abcdef1234567890abcdef" <!-- lint:ignore -->\n',
+        encoding="utf-8")
+    r = run(LINT, "--vault", tmp_path)
+    assert r.returncode == 0
+    assert "凭证" not in r.stdout
+
+
 def test_lint_codespan_wikilink_not_broken_link(tmp_path):
     _mk_vault(tmp_path)
     (tmp_path / "wiki" / "todos.md").write_text(

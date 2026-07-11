@@ -12,11 +12,11 @@ sources:
   # Local project scan: auto-discovers git repos under roots (limited depth); an unmounted root is noted and skipped
   - type: local-git
     roots: [~/projects]
-    exclude: []                # globs, e.g. "**/tmp-*"
     assume: active
+  # To keep a project out: drop a .worklogignore file in its root, or set level: exclude in projects.overrides
   # More source examples (init generates these from "where does your work happen"):
   # - {type: github, account: your-name, assume: active}
-  # - {type: remote-ssh, host: workbox, assume: active, on_unreachable: note}
+  # - {type: remote-ssh, host: workbox, roots: ["~/projects"], assume: active, on_unreachable: note}   # roots = project parent dirs on the remote machine (required by scan.sh)
   # - {type: im, provider: feishu, via: lark-cli, chats: ["oc_xxx"], me: "<open_id or name>", on_unreachable: note, record_others: false}   # set up via feishu-setup
   # - {type: local-dir, path: ~/writing/notes, track: mtime}    # non-git projects must be declared explicitly
 

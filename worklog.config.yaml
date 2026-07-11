@@ -12,11 +12,11 @@ sources:
   # 本机项目扫描：roots 下有限深度自动发现 git 仓；未挂载的 root 记一句跳过（常态路径）
   - type: local-git
     roots: [~/projects]
-    exclude: []                # glob 排除，如 "**/tmp-*"
     assume: active
+  # 不想被记录的项目：项目根放 .worklogignore，或 projects.overrides 配 level: exclude
   # 其余源示例（init 按「你的工作都发生在哪」逐个生成）：
   # - {type: github, account: your-name, assume: active}
-  # - {type: remote-ssh, host: workbox, assume: active, on_unreachable: note}
+  # - {type: remote-ssh, host: workbox, roots: ["~/projects"], assume: active, on_unreachable: note}   # roots = 远端机上的项目父目录（scan.sh 必需）
   # - {type: im, provider: feishu, via: lark-cli, chats: ["oc_xxx"], me: "<open_id 或姓名>", on_unreachable: note, record_others: false}   # 接入走 feishu-setup
   # - {type: local-dir, path: ~/writing/notes, track: mtime}    # 非 git 项目须显式声明
 

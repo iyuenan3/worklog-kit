@@ -17,5 +17,5 @@
 
 ## 惯例
 
-- git 直接提 `main`；发布走 release tag（worklog-update 的拉取单位）。
+- git 直接提 `main`；发布走 release tag（worklog-update 的拉取单位）。tag 格式 = semver `vX.Y.Z`；打 tag 时把 CHANGELOG 对应 Unreleased 段改为「vX.Y.Z（日期）」，两者一一对应。
 - 借鉴维护者私有实现时只搬骨架不搬数据，任何本机路径不得写进产品件。

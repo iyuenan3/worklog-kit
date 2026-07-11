@@ -80,7 +80,7 @@ def main(argv):
         print(__doc__)
         return 2
     if argv[1] == "--all":
-        files = sorted(glob.glob(f"{WORKLOG}/diaries/*.md")) + \
+        files = sorted(glob.glob(f"{WORKLOG}/diaries/**/*.md", recursive=True)) + \
                 sorted(glob.glob(f"{WORKLOG}/wiki/**/*.md", recursive=True))
     else:
         files = argv[1:]

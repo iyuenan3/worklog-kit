@@ -23,9 +23,11 @@ for root in "$@"; do
   # 隐藏目录（.archive/.cache 等，.git 除外）与 node_modules 一律 prune：降噪 + 防 root=$HOME 时扫爆
   # -mindepth 1 保护显式给出的 root 本身（即便它是隐藏目录也不被 prune）
   # -H：root 本身是符号链接时解引用（[ -d ] 跟随符号链接而 find 默认 -P 不跟随，否则静默零输出）
+  # -print0 + read -d ''：路径含换行时按行读会拆成幻影条目污染行协议；这类路径无法在行协议中表示，跳过并 stderr 告警
   find -H "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
     \( -type d \( \( -name '.*' ! -name .git \) -o -name node_modules \) -prune \) -o \
-    -type d -name .git -prune -print 2>/dev/null | while IFS= read -r g; do
+    -type d -name .git -prune -print0 2>/dev/null | while IFS= read -r -d '' g; do
+    case "$g" in *$'\n'*) echo "SKIP_BADNAME path contains newline" >&2; continue ;; esac
     d="${g%/.git}"
     if [ -f "$d/.worklogignore" ]; then
       printf 'IGNORED %s\n' "$d"

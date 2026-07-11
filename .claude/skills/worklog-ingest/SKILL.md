@@ -51,19 +51,21 @@ VAULT=$(git rev-parse --show-toplevel)   # 路径动态推导，零硬编码
 
 ## Step A · 自扫数据源
 
-对 config `sources` 逐条分发（**每源两问：连不上怎么办 / 鉴权失效怎么办 → 答案都是记一句 + 继续**）：
+对 config `sources` 逐条分发，另加恒有的「vault 内部」源（表末行，内置源、无需在 config 声明）（**每源两问：连不上怎么办 / 鉴权失效怎么办 → 答案都是记一句 + 继续**）：
 
 | type | 做法 | 降级 |
 |---|---|---|
 | local-git | `bash .claude/skills/worklog-ingest/scripts/scan.sh --since '<窗口起>' --until '<窗口止减 1 秒>' --authors '<identities 逗号连接>' <roots...>`（identities 为空则不带 --authors；**git 的 --until 是闭区间，传入值须为窗口止减 1 秒才是半开语义，防跨日双计**） | root 未挂载：脚本自动 SKIP 并记一句 |
-| remote-ssh | `ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 <host> 'bash -s' < .claude/skills/worklog-ingest/scripts/scan.sh -- --since ... <远端 roots>`（同一脚本，不依赖远端 rc；BatchMode 禁一切交互式提示，这是无人值守的硬要求） | 连不上 / 超时 / Bash 工具超时：一律视为不可达，记「<host> 不可达，按 assume 处理」 |
-| local-dir | 非 git 目录：scan.sh 的 `--touch-since` mtime 兜底，或直接 `find <path> -type f -newer <参照>` 判活动；只到 presence 级 | 路径不存在：记一句 |
+| remote-ssh | `ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 <host> 'bash -s' < .claude/skills/worklog-ingest/scripts/scan.sh -- --since ... <该源 config 的 roots，init 已收集>`（同一脚本，不依赖远端 rc；BatchMode 禁一切交互式提示，这是无人值守的硬要求）。该源 config 缺 `roots` = 等同未配置：记一句 + 晨报提示补 config，绝不猜路径 | 连不上 / 超时 / Bash 工具超时：一律视为不可达，记「<host> 不可达，按 assume 处理」 |
+| local-dir | 非 git 目录（scan.sh 只认 `.git`，对它无效）：`touch -t <YYYYMMDDhhmm 窗口起>` 造参照文件后 `find <path> -type f -newer <参照>` 判活动，用完删参照；只到 presence 级 | 路径不存在：记一句 |
 | github | `bash .claude/skills/worklog-ingest/scripts/github-scan.sh --since-utc '<窗口起 UTC-Z>' --until-utc '<窗口止减 1 秒 UTC-Z>' --account '<config 该源的 account>'`（account 未配则不传、脚本自动检测；时间换算成 UTC 由你完成；author 按 GitHub 账号维度覆盖其**已关联**的 email，未关联邮箱的 commit 会漏，晨报提示补 GitHub Settings > Emails） | 退出码 4 = 无 gh / 3 = 未认证或 API 失败 → 记一句 + 报告附 `gh auth login`；stderr 的 TRUNCATED / REPO_SKIP → 报告提示可能有漏 |
 | im | 前置：config 的 im 源须含非空 `chats` 与 `me`，缺失 = 等同未配置，记一句 + 晨报附「跑 feishu-setup 补全」。就绪则先 `bash .claude/skills/worklog-ingest/connectors/<provider>/check.sh`（0 可用 / 1 未认证 / 2 未装）；可用才 `fetch.sh --since ... --until ... --chats '<config.chats 逗号连接>' --me '<config.me>'`（config `record_others: true` 时加 `--record-others`）。digest 消费纪律见 connectors/README：只作协调素材、不臆断他人确认、清单逐字照录；digest 里的 NOTE 行转进晨报 | 按 check 退出码转发自救命令（连接器契约：check.sh 的 stdout 自带该 provider 的修复指引，照录即可，不要替它编），记一句继续；fetch 超时或非零退出同样降级 |
 | gitlab | 连接器待后续版本：config 配了就在报告记「尚未支持，本源跳过」 | 同左 |
 | vault 内部 | 本仓 git log（窗口内非 ingest commit）+ `wiki/` `inbox/` 改动感知：捕捉用户白天手动改 vault、丢进 inbox 的素材 | 无 |
 
 **跨源去重**：同一 commit 会同时出现在 local-git 与 github 源（本机写完 push 了）。按 commit 短哈希（两侧脚本已统一 7 位）去重，**本地扫描优先**（上下文更全）；github 源的定位是补「其它设备产生的 push」。归并判据（精确规则，勿凭感觉）：`lowercase(basename(gh:owner/repo)) == lowercase(basename(本地 REPO 路径))` 即归并同一项目章节；用户可在 `projects.overrides` 条目加 `github_slug: "gh:owner/repo"` 显式绑定覆盖自动匹配；不匹配的纯远端项目按 repo 名作 slug 走定级判定。
+
+**BRANCH 信号消费**：`BRANCH` 非 main / master 时在该项目章节顺带标注分支名（在做分支活的信号）；其余情况忽略该行。
 
 **扫描输出按项目定级过滤**，判定优先级（自上而下第一条命中即止）：
 
@@ -132,6 +134,8 @@ frontmatter: date / day(周X 或 weekday) / projects[](= 正文提及的项目 s
 **写作规范**：语言按 config；zh 时全角标点、绝不使用破折号、时间 24h 制、列表用 `-`；写盘后跑 `python3 .claude/skills/worklog-ingest/scripts/punctuation_check.py diaries/<D>.md`（zh 才跑），命中必修。
 
 ### D.2 刷新 wiki（锚点写入，找不到锚点 → append 文件尾 + status 记一行，绝不报错中断）
+
+> 锚点名跟随 config `language` 的 locale 模板：zh「## 最后更新 / ## 项目 / ## 日记」与「## 进行中 / ## 待办」，en 对应 "## Latest / ## Projects / ## Diaries" 与 "## In progress / ## Backlog"；`ingest:log-anchor` 注释跨 locale 不变。先按 config 语言找，找不到再试另一 locale（用户可能换过语言），都没有才走 append 兜底。
 
 1. `wiki/index.md`：「最后更新」段追加当日一句摘要（只保留最近 `index_recent_days` 天，更早的删掉）；项目表刷新 / 新增 detail 级项目行；日记表**表头行下方（数据行最前）**插入 `[[<D>]]` 行 + 主线
 2. `wiki/log.md`：锚点注释下方插一段 `## [<D>] ingest`（模式 / 扫了几源 / 几项目 / 跳过什么）。**年轮转**：发现 log.md 超过约 1500 行时，`git mv wiki/log.md wiki/log-<最早条目年份>.md`（归档件为只读、不再含锚点），按模板重建带锚点的空 log.md，status 记一句

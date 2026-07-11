@@ -2,6 +2,18 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## Unreleased · 第二轮 review 修复（换视角，2026-07-11）
+
+第二轮 8 个全新视角（执行歧义 / 恶意输入 / 时间并发 / 长期规模 / 越轨用户 / 发布形态 / 回归 / 反向契约），13 条确认 + 3 条存疑全处置：
+
+### Fixed
+- **P1**：remote-ssh 源补 `roots` 字段（config 双语模板 + PRD + init 必追问 + ingest 缺失降级，原 schema 无此键、无人值守时只能瞎猜路径）；feishu fetch.sh 命中单页上限（50 条）输出 NOTE（实证 lark-cli 的 `+chat-messages-list` 无自动翻页，活跃群会静默丢消息；接口契约同步进 connectors/README）；移除 config 哑键 `sources[].exclude`（全无消费者，`.worklogignore` 与 overrides `level: exclude` 已覆盖需求，PRD §14 记否决理由）
+- **P2**：scan.sh 与 discover.sh 改 `-print0` 读取并跳过含换行路径（防幻影条目污染行协议）；lint 对非 `YYYY-MM-DD.md` 命名的日记杂件（同步冲突副本）降为 advisory 不再卡红；凭证扫描支持行内 `lint:ignore` 豁免标记；日期门 `--all` 改递归遍历 diaries 子目录（与 lint 口径一致）；DEV.md 定发布 tag SOP（semver `vX.Y.Z` + CHANGELOG 对应）；README 双语 GitLab 标注「计划中」并补依赖版本下限；ingest 补 BRANCH 信号消费规则、local-dir 行去掉误导的 scan.sh 用法、Step A 澄清 vault 内部源不属 config、D.2 锚点名跨 locale 对照（en vault 不再每晚走 append 兜底）；PRD 树图补省略说明；en locale CLAUDE.md 补 dev 指针行（init Step 7 清理目标对齐）
+
+### Added
+- CI 矩阵加 macos-latest（BSD find / sort / grep 与 bash 3.2 是产品声明，只测 GNU 等于没测可移植性）
+- lint 新增 wiki/index.md 增长阈值 advisory（800 行提示按年归档）；tests 补冲突副本与 lint:ignore 两例回归
+
 ## Unreleased · 全仓 review 修复（M5 前，2026-07-11）
 
 18 条确认发现（8 维审计 + 逐条对抗验证）全部修复：

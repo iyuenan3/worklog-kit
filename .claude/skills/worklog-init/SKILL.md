@@ -50,8 +50,8 @@ gh api "repos/{owner}/{repo}" --jq .visibility   # owner/repo 从 git remote 解
 3. **身份** `identities`：从 `git config --get user.email` 预填，追问「还有别的 commit 署名 email 吗（公司邮箱等）」
 4. **数据源** `sources`，逐类问：
    - 本机项目都在哪些目录 / 硬盘？→ `local-git.roots`（多硬盘 = 多 root；提示：给具体的项目父目录而非家目录，自动发现深度有限且不跟随符号链接）
-   - 有 GitHub / GitLab 账号且工作会 push 上去吗？→ `github` / `gitlab` 源
-   - 有「工作不经过托管平台」的远程机器吗？→ `remote-ssh`（提示连通性文档，推荐 Tailscale）
+   - 有 GitHub / GitLab 账号且工作会 push 上去吗？→ `github` / `gitlab` 源（gitlab 连接器尚未实现：config 会保留，ingest 暂跳过并记一句，如实告知）
+   - 有「工作不经过托管平台」的远程机器吗？→ `remote-ssh`（提示连通性文档，推荐 Tailscale）；**必追问「那台机器上项目都在哪些目录」写进该源 `roots`**（ingest 要把 scan.sh 发到远端跑，没有 roots 无从扫起）
    - 用飞书等 IM 协调工作吗？→ `im` 源（提示：需另跑 feishu-setup 完成认证；默认只记你自己发的消息）
    - 有不用 git 的项目目录（写作 / 设计）吗？→ `local-dir` 显式声明
 
@@ -91,7 +91,7 @@ pitfalls 装好后，展示这行全局纪律并**征得同意**后追加进 `~/
 
 ### Step 7 · 收尾
 
-1. **可选移除开发文档**：询问是否删除 `docs/dev/`（worklog-kit 的开发文档，vault 用户不需要）。同意则 `git rm -r docs/dev/` 并清理全部指向它的引用，一处不清就是死链：① 根 CLAUDE.md 末尾的 dev 指针行；② README.md 与 README.en.md 状态段指向 `docs/dev/PRD.md` 的链接（删除该链接、保留 `docs/methodology.md` 链接）；③ CONTRIBUTING.md 里的 `docs/dev/PRD.md` 引用（改为「见上游仓 PRD」，贡献流程只对上游仓有意义）。
+1. **可选移除开发文档**：询问是否删除 `docs/dev/`（worklog-kit 的开发文档，vault 用户不需要）。同意则 `git rm -r docs/dev/` 并清理全部指向它的引用，一处不清就是死链：① 根 CLAUDE.md 末尾的 dev 指针行；② README.md 与 README.en.md 状态段指向 `docs/dev/PRD.md` 的链接（删除该链接、保留 `docs/methodology.md` 链接）；③ CONTRIBUTING.md 里的 `docs/dev/PRD.md` 引用（改为「见上游仓 PRD」，贡献流程只对上游仓有意义）。同批再问一句是否移除开发基建 `.github/` 与 `tests/`（**两者成对删，只删其一会让留下的 CI 变红**）：保留则 CI 会在你的 vault 上继续跑（含对日记的凭证扫描，有误报可能）；移除则 vault 零 CI，日常校验靠 worklog-lint。
 2. **生成上手指南**：按 language 把 `.claude/skills/worklog-init/templates/GETTING_STARTED.<lang>.md` 复制为 vault 根 `GETTING_STARTED.md`（已在 .gitignore）。
 3. **commit**：消息按 language（zh `init: worklog vault 初始化` / en `init: worklog vault initialized`），含 config 与骨架变更；Step 1 检测到 remote 才 push 一次验证链路，无 remote 则跳过并在报告提示。
 4. **收尾报告**：预检 ⚠️ 清单、visibility 结论、config 摘要（几个源 / 几个项目 / 各级别计数）、下一步指引（读 GETTING_STARTED；ingest 就绪后今晚就能「记录今天」）。

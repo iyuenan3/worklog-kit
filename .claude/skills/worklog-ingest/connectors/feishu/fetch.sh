@@ -7,6 +7,8 @@
 #   - MSG 的 | 分隔固定 4 段；author 与 text 内原生 | 已被替换为 ¦，可安全按 | 全拆
 #   - NOTE 走 stdout（协议流的一部分）；调试详情另有一份在 stderr
 # 实现注记（lark-cli v1.0.x 实测命令面）:
+#   - 分页边界：+chat-messages-list 无 --page-all（对照 +chat-members-list 有），单调用只回一页、上限 50 条；
+#     命中上限即输出 NOTE 提醒可能截断（自动翻页循环列 roadmap，接口契约见 ../README.md）
 #   - stdout 可能混入 JSON 之外的 warning 行 → 只认合法 JSON 行
 #   - 消息正文常是 JSON 字符串（{"text": ...}）→ 二次解析兜底
 #   - 超时用「后台执行 + watchdog kill」：$() 直接包 perl alarm 会因子进程持有管道 fd 而失效（实测复现）
@@ -63,6 +65,11 @@ process_chat() {  # $1=chat_id
     printf 'NOTE chat %s: empty response (quiet chat, left chat, or missing permission)\n' "$chat"
     rm -f "$tmpf"
     return 0
+  fi
+  # 单页截断检测：lark-cli 不自动翻页，回满 50 条 JSON 行 = 大概率还有后续消息没拉到
+  jcount=$(grep -c '^{' "$tmpf" 2>/dev/null) || jcount=0
+  if [ "${jcount:-0}" -ge 50 ]; then
+    printf 'NOTE chat %s: hit single-page limit (%s messages), later messages in this window may be missing\n' "$chat" "$jcount"
   fi
   # 解析、方向判定（精确匹配）、过滤、| 消毒全部在 python 内完成，bash 不再做字段级字符串操作
   # 数据经 argv 传文件路径：python3 - 的程序体已占用 stdin（heredoc），不能再用 stdin 传数据

@@ -7,7 +7,11 @@ on:
 
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    # macOS 进矩阵：BSD find/sort/grep 与 bash 3.2 是产品的一等公民声明，只测 GNU 等于没测可移植性
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -19,8 +23,11 @@ jobs:
       # -S error：只把硬错误当门；style/warning 级由人审（本仓有意的分词展开较多）
       - name: shellcheck (errors only)
         run: |
-          command -v shellcheck >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck; }
-          find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 -r shellcheck -S error
+          if ! command -v shellcheck >/dev/null; then
+            if command -v brew >/dev/null; then brew install --quiet shellcheck
+            else sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck; fi
+          fi
+          find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 shellcheck -S error
 
       - name: settings.json is valid JSON
         run: python3 -c "import json; json.load(open('.claude/settings.json'))"

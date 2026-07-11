@@ -107,9 +107,11 @@ for root in "$@"; do
   fi
   # 与 discover.sh 同一发现逻辑：prune 隐藏目录（.git 除外）与 node_modules；-mindepth 1 保护显式 root
   # -H：root 本身是符号链接时解引用（[ -d ] 跟随符号链接而 find 默认 -P 不跟随，否则静默零输出）
+  # -print0 + read -d ''：路径含换行时按行读会拆成幻影条目污染行协议；这类路径无法在行协议中表示，跳过并 stderr 告警
   find -H "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
     \( -type d \( \( -name '.*' ! -name .git \) -o -name node_modules \) -prune \) -o \
-    -type d -name .git -prune -print 2>/dev/null | sort | while IFS= read -r g; do
+    -type d -name .git -prune -print0 2>/dev/null | sort -z | while IFS= read -r -d '' g; do
+    case "$g" in *$'\n'*) echo "SKIP_BADNAME path contains newline" >&2; continue ;; esac
     scan_repo "${g%/.git}"
   done
 done
