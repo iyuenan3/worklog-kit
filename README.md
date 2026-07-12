@@ -4,34 +4,72 @@
 
 > 睡前对 Claude 说一句「记录今天」，第二天醒来：日记写好了、wiki 更新了、TODO 盘点了、已经 commit 了。
 
-worklog-kit 是一套**个人项目大脑**的开箱即用模板：用一个「父项目」vault 管住你所有项目的日常动态与长期知识。它是 [project-lifecycle 方法论](docs/methodology.md) 的官方参考实现，面向**任何 Claude Code 用户**：不预设你的公司环境、IM 工具或语言，一切个人接线皆是配置与连接器。
+worklog-kit 是一套开箱即用的**个人项目大脑**模板：一个「父项目」仓库管住你所有项目的每日动态与长期知识。日记自动编译、知识自动沉淀、全程无人值守，数据永远在你自己的私有 git 仓里。
+
+它是 [project-lifecycle 方法论](docs/methodology.md)的官方参考实现，面向**任何 Claude Code 用户**：不预设你的公司、IM 工具或语言，一切个人差异都是配置与连接器。
 
 ## 它做什么
 
-- **每晚自动编译日记**：扫描你所有工作发生的地方（本机多目录多硬盘、GitHub、远程机器、IM 协调记录；GitLab 计划中），加上你睡前的一句话补充，编译成可复盘的结构化日记
-- **知识自动沉淀**：项目动态、决策、踩坑流入 wiki，跨项目可查可互链
-- **全程无人值守**：触发即全部输入，任何数据源失败都降级记录、绝不挂起等你回话
-- **隐私出厂即紧**：默认私仓 + 公开仓检测拦截 + 凭证隔离 + IM 默认只记你自己发的消息；每个被发现的项目须经你定级授权后才详细记录
-- **数据永远是你的**：worklog-export 随时把全部内容导出为不依赖任何工具链的纯 markdown
+日常使用就是对 Claude 说几句话：
 
-## 快速开始（pre-alpha）
+| 你说 | 发生什么 |
+|---|---|
+| 「记录今天」+ 一句话补充 | 扫描你全部工作现场，编译结构化日记 + 刷新 wiki + 盘点 TODO + commit，无人值守跑完 |
+| 「查 X」 | 跨日记与 wiki 检索，答案带出处 |
+| 丢个文件「收进 inbox」 | PDF / Word / PPT 转 markdown 入素材库，当晚消化 |
+| 「检查」 | vault 健康体检：契约锚点 / 凭证泄漏 / 断链 |
+| 「升级 skill」 | 从上游按 release tag 更新，永不碰你的数据 |
+| 「导出」 | 全量转纯 markdown 带走，不依赖任何工具链 |
 
-1. GitHub「Use this template」建你自己的仓库，**Visibility 选 Private，不要 fork**（公开仓的 fork 无法转私有，你的日记会直接公开；不用 GitHub 托管也可以 clone 后自建私有远端）。之后请一直保持私有，init 与每晚 push 前都会自动检测兜底
-2. 用 Claude Code 打开仓库，说「初始化」（触发 `/worklog-init`）
-3. 按引导完成：环境预检 → 回答「你的工作都发生在哪」→ 项目扫描预览与定级 → 全局 skill 安装
-4. 每晚睡前说「记录今天」+ 一句话补充，然后去睡
+「工作现场」指哪里？本机多目录多硬盘、GitHub、远程机器、IM 协调记录（GitLab 计划中），再加睡前那句 brain-dump 兜底。任何数据源夜里失败都只降级为晨报里的一行，绝不挂起等你回话。
 
-## 接入 IM（可选）
+## 快速开始
 
-用 IM 协调工作的话，任何时候对 Claude 说「配置飞书」：`feishu-setup` 向导会带你完成官方 lark-cli 安装、扫码授权、挑选要读取的会话、写入 config 与自检试拉。默认只记录你自己发的消息；企业租户不允许自建应用时此连接器不可用，跳过即可，其余一切照常。飞书是 IM 连接器接口的首个参考实现，Slack 等可按 `.claude/skills/worklog-ingest/connectors/README.md` 的接口扩展。
+1. GitHub 点「Use this template」建你自己的仓库，**Visibility 选 Private**
+2. 用 Claude Code 打开仓库，说「初始化」：回答「你的工作都发生在哪」，给发现的项目逐个定记录级别
+3. 当晚睡前说「记录今天」，然后去睡
+
+> **不要 fork**：公开仓的 fork 无法转私有，你的日记会直接公开。不用 GitHub 托管也行：clone 后自建私有远端。之后请一直保持私有，init 与每晚 push 前都会自动检测兜底。
 
 ## 长成你的样子
 
-模板只是起点，每个人的用法不同：**这个 vault 支持你和你的 Claude 持续自开发**。改日记章节、演化 wiki 结构、往 `.claude/skills/` 加你自己的 skill（周报、月度复盘、任何你的工作流），都是设计预期而非越轨。安全轨道有两条：其一，红线只有契约锚点、三层所有权与隐私（见仓内 `CLAUDE.md`），其余随用随长；其二，升级不冲突，`worklog-update` 只同步 kit 自带 skill，你自建的 skill 永不被触碰（改过 kit 自带 skill 的话，升级时会逐个展示差异，由你决定覆盖或保留）。演化之后说一声「更新 AIREADME」，决策理由记进 `AIREADME/DECISIONS.md`，半年后还读得懂当初为什么。
+模板只是第 0 天的形状。**这套系统的设计预期，就是被你和你的 Claude 持续改造**：固定不变的只有极少数契约，其余一切跟着你的用法生长。
+
+| 层 | 目录 | 固定的 | 生长的 |
+|---|---|---|---|
+| 日记 | `diaries/` | 文件名格式、只追加 | 章节结构随你演化：想加「阅读」「健身」段，直接说 |
+| 知识 | `wiki/` | 三处段落锚点 | 项目页、索引、TODO 随你的项目自然长 |
+| schema | `worklog.config.yaml` + `AIREADME/` | `schema_version` | 数据源、记录级别、模块开关、一切约定 |
+
+想改什么，对你的 Claude 说就行：
+
+- **「换了新电脑 / 新硬盘 / 新公司」**：config 的 `sources` 加一行，完事
+- **「给我做一个周报 skill，每周五汇总本周日记」**：自建 skill 放进 `.claude/skills/` 新目录，从此「写周报」也是一句话的事
+- **「我们公司用 Slack」**：IM 连接器接口是开放的（`.claude/skills/worklog-ingest/connectors/README.md`），照飞书参考实现写一个即可
+
+敢放手让它长，因为有三条轨道兜底：
+
+1. **红线极少**：契约锚点、三层所有权、隐私，只此三条（仓内 `CLAUDE.md` 列明），其余全是软性约定
+2. **升级不冲突**：`worklog-update` 只同步 kit 自带 skill；你自建的 skill 永不被碰，你改过的 kit skill 升级时逐个展示差异、由你决定覆盖或保留
+3. **演化有账本**：结构变了说一声「更新 AIREADME」，改动与理由记进 `AIREADME/DECISIONS.md`，半年后还读得懂当初为什么
+
+用得越久，这个 vault 越不像模板，越像你。
+
+## 隐私（出厂即紧）
+
+- **默认私仓**：init 与每晚 push 前自动检测 visibility，发现公开立即拦截
+- **凭证隔离**：密钥永不入 git（.gitignore 预置 + lint 凭证扫描兜底）
+- **IM 最小记录**：默认只记你自己发的消息
+- **记录须同意**：每个被发现的项目经你定级（detail / summary / presence / exclude）才会详细记录
+- **零遥测**：不回传任何数据，维护者永远看不到你的日记
+
+## 接入 IM（可选）
+
+用 IM 协调工作的话，任何时候说「配置飞书」：向导带你完成官方 lark-cli 安装、扫码授权、挑选要读取的会话、自检试拉。企业租户不允许自建应用时此连接器不可用，跳过即可，其余一切照常。飞书是 IM 连接器接口的首个参考实现，Slack 等按接口可扩展（接口文档见上一节）。
 
 ## 状态
 
-**pre-alpha（2026-07-11 立项）**：M1 至 M4 已完成，init / ingest / 连接器（GitHub + 飞书）/ import / query / lint / update / export 全部可用；当前处于 M5（种子用户试用与发布准备）。规格见 [docs/dev/PRD.md](docs/dev/PRD.md)，方法论全文见 [docs/methodology.md](docs/methodology.md)。
+**pre-alpha（2026-07-11 立项）**：M1 至 M4 已完成，init / ingest / 连接器（GitHub + 飞书）/ import / query / lint / update / export 全部可用；模板已公开，种子用户试用（M5）进行中。规格见 [docs/dev/PRD.md](docs/dev/PRD.md)，方法论全文见 [docs/methodology.md](docs/methodology.md)。
 
 ## 要求
 

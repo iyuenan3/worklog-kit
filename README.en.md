@@ -4,34 +4,72 @@
 
 > Tell Claude "log today" before bed. Wake up to a written diary, an updated wiki, a reviewed todo list, and a commit.
 
-worklog-kit is a turn-key template for a **personal project brain**: one "parent project" vault that holds the daily activity and long-term knowledge of all your projects. It is the official reference implementation of the [project-lifecycle methodology](docs/methodology.md), built for **any Claude Code user**: no assumptions about your company, IM tool, or language; every personal wire is config or a connector.
+worklog-kit is a turn-key template for a **personal project brain**: one "parent project" repo that holds the daily activity and long-term knowledge of all your projects. The diary compiles itself, knowledge settles on its own, everything runs unattended, and the data never leaves your own private git repo.
+
+It is the official reference implementation of the [project-lifecycle methodology](docs/methodology.md), built for **any Claude Code user**: no assumptions about your company, IM tool, or language; every personal difference is config or a connector.
 
 ## What it does
 
-- **Compiles your diary nightly, unattended**: scans everywhere your work happens (local multi-root and multi-disk, GitHub, remote machines, IM coordination; GitLab planned), adds your one-line brain-dump, and writes a structured, reviewable diary
-- **Knowledge settles automatically**: project activity, decisions, and lessons flow into a wiki, cross-linked and queryable
-- **Never blocks**: your trigger message is the entire input; any failing source degrades to one line in the morning report
-- **Privacy-tight out of the box**: private repo enforced (visibility check before every push), credential isolation, IM sources record only your own messages by default, and every discovered project needs your consent level before detailed recording
-- **Your data stays yours**: worklog-export turns everything into toolchain-free plain markdown at any time
+Day-to-day use is a few sentences to Claude:
 
-## Quick start (pre-alpha)
+| You say | What happens |
+|---|---|
+| "log today" plus a one-line brain-dump | Scans everywhere your work happens, compiles a structured diary, refreshes the wiki, reviews todos, commits; fully unattended |
+| "look up X" | Searches across diaries and wiki, answers with citations |
+| Drop a file, "into inbox" | PDF / Word / PPT converted to markdown, digested that night |
+| "check" | Vault health check: contract anchors / credential leaks / broken links |
+| "upgrade skills" | Updates from upstream by release tag, never touches your data |
+| "export" | Everything out as toolchain-free plain markdown |
 
-1. GitHub "Use this template" → create your repo with **visibility set to Private, and do not fork** (a fork of a public repo cannot be made private, so your diary would be public; not hosting on GitHub is fine too: clone and set up your own private remote). Keep it private from then on; init and every nightly push run an automatic visibility check as a backstop
-2. Open it in Claude Code, say "initialize" (`/worklog-init`)
-3. Follow the wizard: preflight → "where does your work happen" → project discovery and leveling → global skill install
-4. Before bed: "log today" plus a sentence or two, then go to sleep
+Where is "everywhere your work happens"? Local multi-root and multi-disk, GitHub, remote machines, IM coordination (GitLab planned), plus that bedtime brain-dump as the catch-all. Any source failing overnight degrades to one line in the morning report; nothing ever blocks waiting for you.
 
-## Connecting an IM (optional)
+## Quick start
 
-If you coordinate work over an IM, say "set up Feishu" to Claude at any time: the `feishu-setup` wizard walks you through installing the official lark-cli, QR-code auth, picking the chats to read, writing the config, and a self-test pull. Only your own messages are recorded by default. If your company tenant does not allow self-built apps, this connector is unavailable; just skip it, everything else works. Feishu is the first reference implementation of the IM connector interface; Slack and others can be added per `.claude/skills/worklog-ingest/connectors/README.md`.
+1. GitHub "Use this template" → create your own repo, **visibility set to Private**
+2. Open it in Claude Code, say "initialize": answer "where does your work happen" and set a recording level for each discovered project
+3. Before bed, say "log today", then go to sleep
+
+> **Do not fork**: a fork of a public repo cannot be made private, so your diary would be public. Not hosting on GitHub is fine too: clone and set up your own private remote. Keep the repo private from then on; init and every nightly push run an automatic visibility check as a backstop.
 
 ## It grows into your shape
 
-The template is a starting point, and everyone works differently: **this vault is meant to be continuously developed by you and your Claude**. Reshape diary sections, evolve the wiki structure, add your own skills under `.claude/skills/` (weekly reports, monthly reviews, whatever your workflow needs); that is design intent, not going off-road. Two rails keep it safe: first, the only hard rules are the contract anchors, three-layer ownership, and privacy (see `CLAUDE.md` in the repo), everything else grows with use; second, upgrades never collide, since `worklog-update` only syncs kit-shipped skills and never touches skills you created (if you modified a kit-shipped skill, the upgrade shows a per-skill diff and you decide to overwrite or keep). After evolving, say "update AIREADME" and the rationale lands in `AIREADME/DECISIONS.md`, still legible six months later.
+The template is only day zero. **This system is designed to be continuously reshaped by you and your Claude**: only a handful of contracts stay fixed, and everything else grows with how you actually work.
+
+| Layer | Directory | Fixed | Grows |
+|---|---|---|---|
+| Diary | `diaries/` | Filename format, append-only | Section structure evolves with you: want a "Reading" or "Fitness" section, just say so |
+| Knowledge | `wiki/` | Three section anchors | Project pages, index, and todos grow with your projects |
+| Schema | `worklog.config.yaml` + `AIREADME/` | `schema_version` | Sources, recording levels, module switches, every convention |
+
+Want something changed? Tell your Claude:
+
+- **"New laptop / new disk / new job"**: add one line under `sources` in the config, done
+- **"Build me a weekly-report skill that digests this week's diaries every Friday"**: your own skill goes into a new directory under `.claude/skills/`, and "weekly report" becomes a one-liner from then on
+- **"My team uses Slack"**: the IM connector interface is open (`.claude/skills/worklog-ingest/connectors/README.md`); write one modeled on the Feishu reference implementation
+
+You can let it grow because three rails keep it safe:
+
+1. **Minimal hard rules**: contract anchors, three-layer ownership, privacy; those three only (listed in the repo's `CLAUDE.md`), everything else is soft convention
+2. **Upgrades never collide**: `worklog-update` only syncs kit-shipped skills; skills you created are never touched, and kit skills you modified show a per-skill diff at upgrade time for you to overwrite or keep
+3. **Evolution keeps a ledger**: after a structural change, say "update AIREADME" and the change plus rationale land in `AIREADME/DECISIONS.md`, still legible six months later
+
+The longer you use it, the less it looks like a template and the more it looks like you.
+
+## Privacy (tight out of the box)
+
+- **Private by default**: init and every nightly push verify repo visibility and block if public
+- **Credential isolation**: keys never enter git (.gitignore preloaded, lint credential scan as backstop)
+- **Minimal IM recording**: only your own messages by default
+- **Consent before recording**: every discovered project is recorded in detail only after you set its level (detail / summary / presence / exclude)
+- **Zero telemetry**: nothing phones home; the maintainer can never see your diary
+
+## Connecting an IM (optional)
+
+If you coordinate work over an IM, say "set up Feishu" at any time: the wizard walks you through installing the official lark-cli, QR-code auth, picking the chats to read, and a self-test pull. If your company tenant does not allow self-built apps, this connector is unavailable; skip it, everything else works. Feishu is the first reference implementation of the IM connector interface; Slack and others can be added per the interface doc (see previous section).
 
 ## Status
 
-**pre-alpha (started 2026-07-11)**: M1 through M4 are done; init / ingest / connectors (GitHub + Feishu) / import / query / lint / update / export all work. Currently in M5 (seed-user pilot and release preparation). Spec: [docs/dev/PRD.md](docs/dev/PRD.md); methodology: [docs/methodology.md](docs/methodology.md).
+**pre-alpha (started 2026-07-11)**: M1 through M4 are done; init / ingest / connectors (GitHub + Feishu) / import / query / lint / update / export all work. The template is public; seed-user pilot (M5) is in progress. Spec: [docs/dev/PRD.md](docs/dev/PRD.md); methodology: [docs/methodology.md](docs/methodology.md).
 
 ## Requirements
 

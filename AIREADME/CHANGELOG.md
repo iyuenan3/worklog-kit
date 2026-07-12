@@ -2,6 +2,11 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · README 可读性重构（2026-07-12）
+
+### Changed
+- README 双语整体重构：「它做什么」改为触发语表格（产品交互面一目了然）；快速开始收敛为 3 步 + fork 警示引用块；隐私独立成节；「长成你的样子」升格为重点章节（三层固定 / 生长对照表 + 三个对 Claude 说的实例 + 三条安全轨道 + 收束句）；状态段刷新为「模板已公开，种子用户试用（M5）进行中」
+
 ## Unreleased · 新用户上手与自开发口径（2026-07-12）
 
 翻 public + 开 template 后，把口头嘱咐的上手要点固化进产品件：
