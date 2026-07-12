@@ -59,7 +59,7 @@ gh api "repos/{owner}/{repo}" --jq .visibility   # owner/repo 从 git remote 解
 
 ### Step 4 · locale 骨架实例化
 
-- `language: en` → 用 `.claude/skills/worklog-init/templates/locale/en/` 整套覆盖对应产品件：`wiki/` 三件、根 `CLAUDE.md`、`AIREADME/` 全套（config 已在 Step 3 处理）。zh 为默认，无动作。locale 模板随本 skill 分发，也随 worklog-update 同步更新。
+- `language: en` → 用 `.claude/skills/worklog-init/templates/locale/en/` 整套覆盖对应产品件：`wiki/` 三件、根 `CLAUDE.md`、`AIREADME/` 全套（config 已在 Step 3 处理）。zh 为默认，无动作。locale 模板随本 skill 分发，也随 worklog-update 同步更新。注意：`docs/`（methodology / maintenance）暂为 zh 单语、无 en 模板，en 用户如实告知（引用其内容时按需口译），翻译进度见 PRD §16。
 - **出厂检测**：仅覆盖用户未改过的文件，判据 = `git diff --name-only HEAD -- <path>` 无输出且该文件与模板仓出厂内容一致（本仓 clone 后未动即满足）；有用户改动的文件跳过并说明。
 
 ### Step 5 · 扫描预览与项目定级（同意机制第一道闸，PRD §6.4）

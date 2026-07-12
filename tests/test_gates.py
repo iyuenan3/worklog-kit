@@ -106,6 +106,17 @@ def test_lint_catches_secret_and_missing_frontmatter(tmp_path):
     assert "frontmatter" in r.stdout
 
 
+def test_lint_en_locale_templates_pass_anchor_check(tmp_path):
+    # 直接用仓内 en locale wiki 模板建 vault：捕捉「en 模板锚点」与「lint ANCHORS 表」脱钩的回归
+    import shutil
+    src = ROOT / ".claude/skills/worklog-init/templates/locale/en/wiki"
+    shutil.copytree(src, tmp_path / "wiki")
+    (tmp_path / "diaries").mkdir()
+    r = run(LINT, "--vault", tmp_path)
+    assert "锚点" not in r.stdout
+    assert r.returncode == 0
+
+
 def test_lint_missing_anchor_is_hard(tmp_path):
     _mk_vault(tmp_path)
     (tmp_path / "wiki" / "index.md").write_text("# 被用户改坏的 index\n", encoding="utf-8")

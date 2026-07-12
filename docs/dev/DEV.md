@@ -6,7 +6,7 @@
 - 深度 review 方法论：[`deep-review.md`](deep-review.md)（开发工序笔记，明确不产品化）
 - 方法论：[`../methodology.md`](../methodology.md)（产品件，随模板分发）
 - 版本史：[`../../AIREADME/CHANGELOG.md`](../../AIREADME/CHANGELOG.md)（kit 发布史与 vault 版本单一流，2026-07-12 起）
-- 里程碑：PRD §15（M1 模板骨架 → M2 ingest 重写 → M3 连接器 → M4 收尾 → M5 pilot 与发布）
+- 里程碑：PRD §15（M1 模板骨架 → M2 ingest 重写 → M3 连接器 → M4 收尾 → M5 pilot 与发布 → M6 vault 记忆维护）
 
 ## 开发红线
 

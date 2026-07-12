@@ -2,6 +2,18 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · 第六轮 review 修复（全仓深度审查，2026-07-12）
+
+8 维全仓深审（全链路排演 / 脚本实跑 / 跨文档一致 / 长期规模 / 威胁建模二轮 / 双语 locale / 测试空洞 / 写作形象），40 条原始 → 30 去重 → 3 视角对抗验证，8 条确认全处置、22 条驳倒：
+
+### Fixed
+- **P1**：worklog-update Step 3 的 `diff -rq` 只报文件名，不构成 §12 信任模型宣称的人工审计点：补内容级审计（「有变更」skill 的 SKILL.md 与脚本逐个 `diff -ru` 展示再确认）；scan.sh 嵌套 roots（如 ~/code 与 ~/code/work）同仓重复扫描致 DIRTY 翻倍：改为全局收集 .git 路径 `sort -zu` 去重（临时文件不可写时降级逐 root，已知限制注明），嵌套双 root fixture 实测 1 个 REPO 块
+- **P2**：README 双语补 maintain 能力（触发语表格行 + 状态段 M6 + 检查行口径升级为正误 + 体检五项）；PRD 头部状态刷新 v0.6 与 M6；init Step 4 与 PRD §16 如实告知 docs/ 暂为 zh 单语（en 无模板，翻译与 SKILL 全集同批决策）
+- **P3**：settings.json `Bash(rm -rf:*)` 收窄为 `Bash(rm -rf .claude/skills/:*)`（最小权限一致性；验证者确认无增量安全收益、纯 hygiene，update 清理临时目录会多一次交互确认属可接受）；DEV.md 里程碑链补 M6
+
+### Added
+- tests：en locale wiki 模板直接过 lint 锚点检查的回归测试（捕捉 en 模板与 ANCHORS 表脱钩）
+
 ## Unreleased · vault 记忆维护（体检 + 修复，2026-07-12）
 
 摄入时编译架构的盲区补批处理维护工序（PRD §18；设计参考 InquisiMind/digital-life 的维护工序思想）：

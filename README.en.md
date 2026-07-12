@@ -17,7 +17,8 @@ Day-to-day use is a few sentences to Claude:
 | "log today" plus a one-line brain-dump | Scans everywhere your work happens, compiles a structured diary, refreshes the wiki, reviews todos, commits; fully unattended |
 | "look up X" | Searches across diaries and wiki, answers with citations |
 | Drop a file, "into inbox" | PDF / Word / PPT converted to markdown; that night's diary references it, deep digestion on request |
-| "check" | Vault health check: contract anchors / credential leaks / broken links |
+| "check" | Correctness checks (contract anchors / credential leaks / broken links) plus five checkup metrics (drift / orphans / splits / bloat / stale todos) |
+| "maintain vault" | Batch upkeep: repairs checkup items by corruption type (merge / archive / relink), one commit per type |
 | "upgrade skills" | Updates from upstream by release tag, never touches your data |
 | "export" | Everything out as toolchain-free plain markdown |
 
@@ -69,7 +70,7 @@ If you coordinate work over an IM, say "set up Feishu" at any time: the wizard w
 
 ## Status
 
-**pre-alpha (started 2026-07-11)**: M1 through M4 are done; init / ingest / connectors (GitHub + Feishu) / import / query / lint / update / export all work. The template is public; seed-user pilot (M5) is in progress. Spec: [docs/dev/PRD.md](docs/dev/PRD.md); methodology: [docs/methodology.md](docs/methodology.md).
+**pre-alpha (started 2026-07-11)**: M1 through M4 plus M6 (vault memory maintenance) are done; init / ingest / connectors (GitHub + Feishu) / import / query / lint / maintain / update / export all work. The template is public; seed-user pilot (M5) is in progress. Spec: [docs/dev/PRD.md](docs/dev/PRD.md); methodology: [docs/methodology.md](docs/methodology.md).
 
 ## Requirements
 

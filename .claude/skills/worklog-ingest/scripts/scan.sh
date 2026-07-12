@@ -98,6 +98,10 @@ EOF
   fi
 }
 
+# 先收集全部 root 的 .git 路径再全局去重：roots 嵌套（如 ~/code 与 ~/code/work）时
+# 同一仓会被发现两次，COMMIT 有 hash 去重兜底但 DIRTY 计数会翻倍、REPO 块重复污染下游
+GIT_LIST="${TMPDIR:-/tmp}/worklog-scan-gits.$$"
+: > "$GIT_LIST" 2>/dev/null || GIT_LIST=""
 for root in "$@"; do
   # 仅展开 ~ 与 ~/ 前缀；~user 形式不支持（会落到 SKIP_UNMOUNTED）
   case "$root" in "~") root="$HOME" ;; "~/"*) root="$HOME/${root#\~/}" ;; esac
@@ -108,13 +112,27 @@ for root in "$@"; do
   # 与 discover.sh 同一发现逻辑：prune 隐藏目录（.git 除外）与 node_modules；-mindepth 1 保护显式 root
   # -H：root 本身是符号链接时解引用（[ -d ] 跟随符号链接而 find 默认 -P 不跟随，否则静默零输出）
   # -print0 + read -d ''：路径含换行时按行读会拆成幻影条目污染行协议；这类路径无法在行协议中表示，跳过并 stderr 告警
-  find -H "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
-    \( -type d \( \( -name '.*' ! -name .git \) -o -name node_modules \) -prune \) -o \
-    -type d -name .git -prune -print0 2>/dev/null | sort -z | while IFS= read -r -d '' g; do
+  if [ -n "$GIT_LIST" ]; then
+    find -H "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
+      \( -type d \( \( -name '.*' ! -name .git \) -o -name node_modules \) -prune \) -o \
+      -type d -name .git -prune -print0 2>/dev/null >> "$GIT_LIST"
+  else
+    # 临时文件不可写的降级路径：退回逐 root 处理（嵌套 roots 会重复，属罕见环境的已知限制）
+    find -H "$root" -mindepth 1 -maxdepth "$MAXDEPTH" \
+      \( -type d \( \( -name '.*' ! -name .git \) -o -name node_modules \) -prune \) -o \
+      -type d -name .git -prune -print0 2>/dev/null | sort -z | while IFS= read -r -d '' g; do
+      case "$g" in *$'\n'*) echo "SKIP_BADNAME path contains newline" >&2; continue ;; esac
+      scan_repo "${g%/.git}"
+    done
+  fi
+done
+if [ -n "$GIT_LIST" ]; then
+  sort -zu "$GIT_LIST" | while IFS= read -r -d '' g; do
     case "$g" in *$'\n'*) echo "SKIP_BADNAME path contains newline" >&2; continue ;; esac
     scan_repo "${g%/.git}"
   done
-done
+  rm -f "$GIT_LIST"
+fi
 
 [ -n "$REF_FILE" ] && rm -f "$REF_FILE"
 exit 0

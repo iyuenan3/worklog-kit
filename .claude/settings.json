@@ -17,7 +17,7 @@
       "Bash(git clone:*)",
       "Bash(git mv:*)",
       "Bash(rm -f .ingest.lock)",
-      "Bash(rm -rf:*)",
+      "Bash(rm -rf .claude/skills/:*)",
       "Bash(rm .ingest.lock)",
       "Bash(git config --get:*)",
       "Bash(date:*)",
