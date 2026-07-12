@@ -241,10 +241,13 @@ def load_health_config(root):
             k = k.strip()
             if k in HEALTH_DEFAULTS:
                 pv = _parse_scalar(v)
+                # 负阈值无意义：忽略非法值回退默认，绝不产出「超 -5 天」类误导输出
                 if isinstance(HEALTH_DEFAULTS[k], list):
-                    if isinstance(pv, list) and pv:
-                        cfg[k] = sorted(pv)
-                elif isinstance(pv, int):
+                    if isinstance(pv, list):
+                        valid = sorted(x for x in pv if x >= 0)
+                        if valid:
+                            cfg[k] = valid
+                elif isinstance(pv, int) and pv >= 0:
                     cfg[k] = pv
     return cfg, tz
 
@@ -386,10 +389,14 @@ def run_health(root, today_arg):
             continue
         n, inside = 0, False
         for line in wiki[rel].splitlines():
-            if line.startswith("#"):
-                inside = any(h in line for h in DECISION_HEADS)
+            m_head = re.match(r"(#{1,6})\s", line)
+            if m_head:
+                # 只有一二级标题切换段落；###+ 是段内子分组（如按季度），不打断计数
+                if len(m_head.group(1)) <= 2:
+                    inside = any(h in line for h in DECISION_HEADS)
                 continue
-            if inside and re.match(r"\s*- ", line):
+            # 只数顶层条目：缩进的子条目（理由 / 备注）不算独立决策
+            if inside and line.startswith("- "):
                 n += 1
         if n > cfg["decision_log_max"]:
             items.append(f"膨胀: {rel} 决策日志 {n} 条 > {cfg['decision_log_max']}（建议老条目归档）")

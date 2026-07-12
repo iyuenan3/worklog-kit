@@ -136,6 +136,29 @@ def test_todo_age_buckets(tmp_path):
     assert "超 30 天未完成 1 条" in r.stdout
 
 
+def test_decision_log_subheadings_and_subitems(tmp_path):
+    v = make_vault(tmp_path, "maintenance:\n  decision_log_max: 3\n")
+    body = ("## 决策日志\n\n- 决策一\n  - 理由 A\n  - 理由 B\n"
+            "### 2026 Q1\n- 决策二\n- 决策三\n- 决策四\n\n## 其他\n\n- 不算决策\n")
+    add_project(v, "alpha", TODAY, body)
+    add_diary(v, "2026-07-11", "推进 [[alpha]]。")
+    r = run_health(v)
+    # 顶层决策 4 条：缩进子条目不计、### 子分组不打断、## 其他 打断
+    assert "决策日志 4 条 > 3" in r.stdout
+
+
+def test_negative_thresholds_fall_back_to_defaults(tmp_path):
+    v = make_vault(tmp_path, "maintenance:\n  drift_days: -10\n  todo_stale_days: [-5, 30]\n")
+    add_project(v, "alpha", TODAY)
+    add_diary(v, "2026-07-11", "推进 [[alpha]]。")
+    (v / "wiki" / "todos.md").write_text(
+        "# TODO\n\n## 进行中\n\n- [ ] 今天的新任务 ➕ 2026-07-12\n\n## 待办\n", encoding="utf-8")
+    r = run_health(v)
+    # 负值被忽略：drift 回退默认 14（同日无漂移）；[-5, 30] 只留 30（新任务不命中）
+    assert r.returncode == 0
+    assert "-5" not in r.stdout and "-10" not in r.stdout
+
+
 def test_todo_stale_marked_skipped(tmp_path):
     v = make_vault(tmp_path)
     (v / "wiki" / "todos.md").write_text(

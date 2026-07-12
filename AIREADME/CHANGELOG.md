@@ -11,7 +11,12 @@
 - ingest D.4 体检提醒行：超阈值才在当天日记末尾追加一行指引，健康时零痕迹；同日补充已有行则原地更新数字、清零改写不删行（日记只追加）
 - `worklog-maintain` skill（本功能唯一新增，双 locale 路由）：现场体检 → 按腐坏类型分批修复每类一 commit → 全门验收出小结；授权跟触发方式走（交互 = 明示授权直接修，无人值守只报告）；三红线（diaries 永不触碰 / wiki 只合并归档重链 / TODO 僵尸只标记）
 - 文档三小件：`docs/maintenance.md`（schedule 月度报告模式配方 + `~/.claude` memory 瘦身手工配方）、`docs/dev/deep-review.md`（深度 review 方法论占位，明确不产品化）
-- tests/test_health.py 12 例；fixture vault E2E：五类腐坏注入 6 项全检出 → 5 类修复（6 → 1 → 0）→ 提醒行三路径 → 四门全绿
+- tests/test_health.py 14 例；fixture vault E2E：五类腐坏注入 6 项全检出 → 5 类修复（6 → 1 → 0）→ 提醒行三路径 → 四门全绿
+
+### Fixed（本功能对抗验证轮：6 维 21 条原始 → 19 去重 → 3 确认全处置、16 驳倒）
+- 决策日志计数两处边界：### 子分组标题不再打断计数（只有一二级标题切段）；缩进子条目（理由 / 备注）不再计为独立决策
+- 负数阈值（如 `todo_stale_days: [-5, 30]`）被静默接受并产出「超 -5 天」类误导输出：非法值忽略回退默认
+- PRD §6.2 config 草案补 maintenance 段（穷举同步，配套记忆里的既知坑）
 
 ## Unreleased · 第五轮 review 修复（workflow 对抗审查，2026-07-12）
 
