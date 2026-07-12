@@ -56,7 +56,8 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
     ├── worklog-import/           # markitdown 素材摄入（init 存量迁移复用）
     ├── feishu-setup/             # IM 连接器接口（§6.3）的首个参考实现
     ├── worklog-query/            # 「查 X」显式化
-    ├── worklog-lint/             # 断链 / frontmatter / 凭证扫描（标点门为中文 locale 可选项）
+    ├── worklog-lint/             # 断链 / frontmatter / 凭证扫描（标点门为中文 locale 可选项）+ --health 健康节（§18）
+    ├── worklog-maintain/         # vault 记忆维护：体检项分批修复（§18）
     ├── worklog-update/           # 从 upstream 拉 skill 新版（安全边界见 §12）
     ├── worklog-export/           # 退出通道：去方言导出（§9 第 5 条）
     ├── aireadme/                 # canonical 在此维护（§4.2）
@@ -164,7 +165,8 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 | worklog-import | `uvx markitdown` 转换 docx / PDF / pptx 等入 `inbox/`；图片 LLM 描述默认关；ingest 不自动扫 inbox（防耗时爆炸），只引用当天新增条目 |
 | feishu-setup | §6.3 连接器接口的首个参考实现 |
 | worklog-query | 「查 X」跨日记 + wiki 检索行为显式化；检索优先走 Obsidian CLI（app 在运行时；macOS 可 `open -ga` 后台拉起），不可用静默回退 rg / grep，Obsidian 始终非硬前提 |
-| worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；写作门随包：标点门（punctuation_check.py）仅 `language: zh` 加载，日期门（date_weekday_check.py）zh / en 都跑；个人演化项不进 kit |
+| worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；写作门随包：标点门（punctuation_check.py）仅 `language: zh` 加载，日期门（date_weekday_check.py）zh / en 都跑；健康节 `--health` 五项指标（§18，零 LLM）；个人演化项不进 kit |
+| worklog-maintain | vault 记忆维护（§18）：现场体检 → 按腐坏类型分批修复（每类一 commit）→ 全门验收；交互触发才动文件，无人值守只报告；三红线（diaries 不碰 / wiki 只合并归档重链 / TODO 僵尸只标记） |
 | worklog-update | 镜像同步 `.claude/skills/` 白名单路径（含三件套统一经此更新），其余 hard deny（§12）；上游地址可经 config `upstream_repo` 覆盖（fork 用户） |
 | worklog-export | 退出通道（§9.5）：wikilink 转普通链接 + 移除 Tasks 查询块与行尾元数据 emoji，产物为不依赖工具链的纯 markdown |
 
@@ -234,6 +236,8 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - plugin 市场分发（发布后按用户规模再评估）
 - feishu 之外的第二个 IM 连接器（接口先行，实现按需求排期或社区贡献）
 - aireadme STANDARD.md 全文英文化（上游事项，后置）
+- 全仓深度 review 方法论产品化（开发工序、token 成本高，用户 vault 不需要；`docs/dev/deep-review.md` 留方法论占位）
+- worklog-maintain 触碰 `~/.claude` memory（git 之外不可回滚，v1 只给 `docs/maintenance.md` 手工瘦身配方）
 
 ## 15. 里程碑
 
@@ -259,8 +263,27 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 ---
 
+## 18. vault 记忆维护（体检 + 修复）
+
+> 设计定稿 2026-07-12。维护工序思想参考开源项目 InquisiMind/digital-life，在此一句致谢；不搬其任何代码。
+
+**问题**：本 kit 是「摄入时编译」架构，ingest 是增量编译器，只看见当晚窗口，看不到跨月才显形的腐坏：① 状态漂移（wiki 页与日记脱节）② 实体分裂（同一实体多个 wikilink 写法）③ 膨胀（页面 / 决策日志 / TODO 无限累积）④ 重复分叉 ⑤ 过时断言。本功能补一道批处理的维护工序，相当于 GC + 碎片整理。
+
+**交付四件**：
+
+1. **lint 健康节**（不新增 skill）：`lint.py --health`，零 LLM 纯脚本，五项指标：状态漂移（项目页 `last_updated` vs 最近提及它的日记日期，差超 `drift_days`）、孤儿页（`orphan_days` 内无日记引用且无 wiki 入链）、实体分裂候选（wikilink 形态学归一化后撞名；中英别名超出机械归一化能力，候选之外的语义判断留给 maintain 的 LLM）、膨胀（页面超 `bloat_kb` KB 或项目页决策日志超 `decision_log_max` 条）、TODO 年龄（开放任务按 `todo_stale_days` 分档，默认 30 / 90 天）。阈值进 config `maintenance:` 段，全部可选、脚本内置默认值。断链等正误项仍归原 lint 正误节，健康节只消费不重复实现。退出码约定：0 健康 / 2 有待维护项（1 保留给正误节 must-fix）；末行 `🩺 N 项待维护` 供脚本消费。
+2. **ingest 提醒行**（改动最小化）：D.4 跑门时顺带 `lint.py --health`，N>0 才在当天日记末尾追加一行「vault 体检：N 项待维护，说『维护 vault』处理」；健康时完全静默、日记零痕迹；脚本缺失静默跳过（lint 未安装不拖垮 ingest）。
+3. **worklog-maintain skill**（本功能唯一新增 skill）：触发「维护 vault / vault 保养 / 处理体检项 / maintain vault」。执行契约 = 现场重跑 `--health` 拿新报告（证据先行，不信旧报告）→ 按腐坏类型分批修复、每类一个 commit（`maintain:` 前缀）→ 全部修完重跑 lint 正误 + 健康 + 写作门验收 → 输出维护小结。授权模型跟触发方式走、无全局开关：交互触发 = 明示授权，wiki 类直接修（git 可回滚）；定时 / 无人值守触发只出报告不动文件。三条红线：`diaries/` 永不触碰；wiki 只合并 / 归档 / 重链，删除留给人；TODO 僵尸只标记不关闭（出厂默认）。原则：证据先行、每次只处理少量明确问题、不为整洁删除仍有价值的内容。维护记录闭环靠当晚 ingest 的 vault 内部源自然收录 maintain commit，零额外记账逻辑。v1 管辖仅 vault 仓内（diaries 只读 / wiki / todos），不碰 `~/.claude` memory（git 之外不可回滚，替代方案 = 手工配方文档）。
+4. **文档三小件**：`docs/maintenance.md`（① Claude Code schedule 月度自动维护配方·报告模式 ② `~/.claude` memory 的 `MEMORY.md` 瘦身手工配方）+ `docs/dev/deep-review.md`（③ 全仓深度 review 方法论占位，明确不产品化）。
+
+**决策理由**：
+- **检查与修复分离**：体检是零 LLM 脚本，可被 ingest 静默调用、可进 CI、可单测；修复需要语义判断（哪两个名指同一实体、哪段还有价值），是 LLM 工序。混在一起两头都做不好。
+- **授权跟触发方式走**：交互触发本身就是「用户此刻在场且要求维护」的明示授权，无需全局开关多养一个状态；无人值守场景天然无法确认边界情况，降级为报告是唯一安全解。
+- **schema_version 不升版**：`maintenance:` 全部键可选且脚本内置默认值，缺省不构成迁移，已进场种子用户的 vault 零动作兼容。
+
 ## 修订记录
 
+- **v0.6（2026-07-12）vault 记忆维护设计定稿**：新增 §18（主 session 以「v0.5 新功能」立项交办）：lint 健康节（--health 五项指标 + config maintenance 阈值段）、ingest 体检提醒行、worklog-maintain skill（检查与修复分离、授权跟触发方式走、三红线）、文档三小件。§7 / §4.1 / §14 / §15 同步。
 - **v0.5（2026-07-12）提前公开**：应种子用户直接从 GitHub 取用的需求，提前翻 public + 开 template，未走完原定 dogfood → pilot → 审计顺序。翻 public 前过泄漏飞检：全仓 `LC_ALL=C` 红线词扫描仅命中 LICENSE 公开署名（保留）；commit message 干净；git author email 与已公开 personal-skills 一致，不构成新增泄漏，M5「git 历史 Author email 处理」项消解。由此红线升级：本仓内容从「默认将来公开」变为「即时公开」（每次 push 前自查 diff 与 commit message）；禁止随意改写已 push 历史（外部用户可能已 clone，force push 前先评估影响）。§15 M5、§16 发布时机与 DEV.md 红线同步。
 - **v0.4（2026-07-11）工作流 skill canonical 迁入**：三件套（aireadme / stash / pitfalls）与 project-lifecycle.md 的 canonical 维护地从 personal-skills 迁入本仓（§4.2 三步演化至终态），跨仓 sync 机制整体取消；personal-skills 留目录 stub + 顶层指针表，story-writer 留守，worklog-ingest 公开骨架废弃为指针；GitHub 私仓即刻建立，M5 审计后翻 public。
 - **v0.3（2026-07-11）项目发现与记录同意**：确立「发现 ≠ 记录」（§6.4）。没有人能枚举用户机器上的私有项目（维护者不能、用户自己也未必能），故发现全自动、记录须同意：四级记录级别（detail / summary / presence / exclude）+ init 扫描预览定级 + 新项目安全默认 presence + 项目侧 `.worklogignore` 否决权 + 非 git 项目显式声明 + slug 冲突规则；§9 增补零遥测与脱敏诊断。这是维护者「RAG 排除 / 特定项目不进扫描列表 / 无 git 项目特批」等个人实践的产品化。
