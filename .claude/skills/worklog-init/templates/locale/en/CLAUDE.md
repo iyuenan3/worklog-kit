@@ -24,9 +24,10 @@
 - **Privacy**: this repo must stay **private** (ingest verifies visibility before every push); credentials / private keys never enter git (.gitignore preloaded); IM sources record only your own messages by default.
 - `inbox/` is the raw-material dropbox: humans put things in, AI digests them; archive or delete once digested.
 
-## Maintenance
+## Maintenance & self-development
 
-- Structural evolution is the design intent: apart from the anchors and contract files above, let everything grow with your usage; when it changes, run `/aireadme` to update `AIREADME/`.
+- Structural evolution is the design intent: apart from the anchors and contract files above, let everything grow with your usage; when it changes, run `/aireadme` to update `AIREADME/` (rationale into DECISIONS).
+- **Continuous self-development of this vault is welcome**: new diary sections, new wiki structures, and skills of your own (weekly reports / reviews / whatever your workflow needs) are design intent, not off-road. Put your own skills in `.claude/skills/<new-dir>/`; worklog-update never touches locally-added skills. Modifying kit-shipped skills is fine too: upgrades show a per-skill diff and you decide to overwrite or keep.
 - New project / device / IM: add one entry under `sources` in `worklog.config.yaml`; when unsure about a level, start with `presence`.
 
 ---

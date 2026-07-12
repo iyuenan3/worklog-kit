@@ -24,9 +24,10 @@
 - **隐私**：本仓必须保持**私有**（ingest push 前自动检测 visibility）；凭证 / 私钥绝不入 git（.gitignore 已预置兜底）；IM 源默认只记你自己发的消息。
 - `inbox/` 是原料收件箱：人放、AI 消化，消化完可归档删除。
 
-## 维护
+## 维护与自开发
 
-- 结构演化是这套系统的设计预期：除上面锚点与契约文件外，一切按你的用法长；变了就用 `/aireadme` 更新 `AIREADME/`。
+- 结构演化是这套系统的设计预期：除上面锚点与契约文件外，一切按你的用法长；变了就用 `/aireadme` 更新 `AIREADME/`（决策理由进 DECISIONS）。
+- **欢迎持续自开发本 vault**：新日记章节、新 wiki 结构、自建 skill（周报 / 复盘 / 任何你的工作流）直接做，不算越轨。自建 skill 放 `.claude/skills/<新目录>/`，worklog-update 永不触碰本地独有 skill；改 kit 自带 skill 也可以，升级时逐 skill 展示差异，由你决定覆盖或保留。
 - 新项目 / 新设备 / 新 IM：在 `worklog.config.yaml` 的 `sources` 加一条即可，级别不确定就先 `presence`。
 
 ---

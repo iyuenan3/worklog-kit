@@ -2,6 +2,15 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · 新用户上手与自开发口径（2026-07-12）
+
+翻 public + 开 template 后，把口头嘱咐的上手要点固化进产品件：
+
+### Added
+- README 双语快速开始第一步强化：Use this template 时 **Visibility 选 Private、不要 fork**（公开仓的 fork 无法转私有），并说明 init 与每晚 push 的 visibility 检测是兜底不是替代
+- README 双语新增「接入 IM（可选）」段：feishu-setup 向导入口、默认只记本人消息、企业受限优雅跳过、接口开放可扩 Slack 等（README 原先只在依赖清单提了一嘴飞书，没有配置入口）
+- README 双语新增「长成你的样子」段，根 CLAUDE.md 与 en locale 模板「维护」段扩为「维护与自开发」：明确 vault 支持用户与其 Claude 持续自开发（红线之外随用随长；自建 skill 放新目录，worklog-update 永不触碰本地独有 skill，改 kit 自带 skill 升级时逐个确认）
+
 ## Unreleased · 第四轮 review 修复（重构回归 + 实排演，2026-07-12）
 
 6 视角（3 实跑重演 + 3 深读），12 条原始收敛为 5 条确认全处置；init / ingest / update 实排演零功能性破坏：
