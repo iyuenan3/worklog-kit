@@ -40,7 +40,6 @@ worklog-kit 是 `project-lifecycle` 方法论的**官方参考实现与 canonica
 worklog-kit/                      # 仓根 = 用户 vault 模板
 ├── README.md                     # 产品叙事（project-lifecycle 简版 + 链接完整版）
 ├── CLAUDE.md                     # vault router（产品件，面向使用者）
-├── AGENTS.md                     # 指向 CLAUDE.md（防 Codex 打开 vault 时偏离约定）
 ├── AIREADME/                     # 极简预置（aireadme skill 可维护）
 ├── worklog.config.yaml           # 入 git：数据源 / 扫描根 / 时区 / locale / 模块开关（无任何凭证）
 ├── worklog.config.local.yaml     # 不入 git：敏感字段（.gitignore 预置）
@@ -229,7 +228,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - source 级 glob 排除键（曾有 `exclude: []` 草案）：`.worklogignore` 与 overrides `level: exclude` 已覆盖需求，为避免无消费者的哑键于第二轮 review 移除
 - 缺口自动回补（硬盘插回只记一句滞留 commit，回补走补充模式手动触发）
 - homepage 通用化（phase 2 独立立项）
-- Codex 双运行时支持（仅 AGENTS.md 指针，Codex 产出靠 git 天然捕获）
+- Codex 双运行时支持（vault 约定只面向 Claude Code；Codex 等其它工具的产出靠 git 天然捕获。曾设 AGENTS.md 指针，2026-07-12 按维护者决定移除，产品硬前提本就是 Claude Code）
 - Obsidian 硬依赖（推荐查看器：附最小 `.obsidian/` 配置让 Tasks 插件即装即用）
 - Windows 原生支持（WSL 实验性）
 - plugin 市场分发（发布后按用户规模再评估）

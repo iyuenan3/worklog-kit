@@ -2,6 +2,11 @@
 
 worklog-kit 版本史。格式参考 [Keep a Changelog](https://keepachangelog.com/)。
 
+## Unreleased · AGENTS.md 移除（2026-07-12）
+
+### Removed
+- 根 `AGENTS.md` 与 en locale 模板对应件：产品硬前提是 Claude Code，vault 约定只面向 CLAUDE.md；Codex 等其它工具的产出靠 git 天然捕获，不再保留指针文件（维护者决定，PRD §14 已同步）
+
 ## Unreleased · 仓根收缩（2026-07-11）
 
 根目录只留 vault 本体与 GitHub 惯例件，上游仓专属 / 仅 init 时使用的资产归位：
