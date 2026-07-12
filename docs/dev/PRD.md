@@ -1,6 +1,6 @@
 # PRD · worklog-kit
 
-> 立项：2026-07-11（周六）｜状态：v0.4，M1 至 M4 已完成、M5（pilot 与发布）进行中
+> 立项：2026-07-11（周六）｜状态：v0.5，M1 至 M4 已完成；2026-07-12 已提前翻 public + 开 template（见修订记录 v0.5），M5 余项（种子用户试用与实测）进行中
 > 本文档是产品需求 + 工程规格的单一真相源，由四轮孵化讨论 + 一轮 112 条多视角设计审计（4 路并行审计 97 条 + 完整性补漏 15 条）收敛而来，调优阶段直接修订本文档。修订记录见文末。
 
 ---
@@ -191,8 +191,8 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 ## 9. 安全与隐私（出厂默认）
 
 1. **权限**：模板随附 `.claude/settings.json`，allow 清单精确列出 ingest 用到的命令模式（git / ssh / python3 / find / date 等），不开 bypassPermissions；README troubleshooting 写明首跑弹权限的处理
-2. **公开仓双检**：init 时 + 每晚 push 前 `gh api` 查 visibility，发现 public 立即中断 push 并红色警告（use-as-template 误选 public、日后手动改公开都在此拦截）
-3. **凭证隔离**：config 两层（base 入 git 零凭证 / local 不入 git）；.gitignore 预置 `.ingest-status.md`、`.ingest.lock`、`.ingest-history.log`、`worklog.config.local.yaml`、`export/`、`.obsidian/workspace*`、`.env*`、`*.key`、`*.pem`、`id_rsa*`、`id_ed25519*`、`credentials*`、`GETTING_STARTED.md`、`.DS_Store`、`node_modules/`、`__pycache__/`、`*.pyc`
+2. **公开仓双检**：装有 gh 时，init 时 + 每晚 push 前 `gh api` 查 visibility，发现 public 立即中断 push 并红色警告（use-as-template 误选 public、日后手动改公开都在此拦截）；gh 为可选依赖，缺失时无自动检测，init 与 ingest 均提示用户自行确认私有并记入报告，README 面向用户的表述同此口径
+3. **凭证隔离**：config 两层（base 入 git 零凭证 / local 不入 git）；.gitignore 预置 `.ingest-status.md`、`.ingest.lock`、`.ingest-history.log`、`worklog.config.local.yaml`、`export/`、`.obsidian/*`（含 `!` 白名单保留模板预置的 `app.json` 与 `community-plugins.json` 两件）、`.env*`、`*.key`、`*.pem`、`id_rsa*`、`id_ed25519*`、`credentials*`、`GETTING_STARTED.md`、`.DS_Store`、`node_modules/`、`__pycache__/`、`*.pyc`
 4. **IM 最小记录**（所有连接器统一）：默认只记用户本人发的消息，记录他人需显式 `record_others: true` 且 README「IM 数据使用须知」写明合规责任（被记录同事、雇主信息安全政策、私仓仍在第三方服务器）；不臆断对方确认、清单类逐字照录等纪律进 skill 本体
 5. **数据所有权**：diaries / wiki 是标准 markdown；提供 worklog-export（去 Tasks 语法 + wikilink 转普通链接）作退出通道
 6. **零遥测 + 脱敏诊断**：kit 不回传任何数据，维护者永远看不到用户的项目与日记；报 issue 用脱敏诊断输出（环境版本 + 各数据源匿名化状态，项目名与路径经占位符化），issue 模板只收这份输出，杜绝用户为求助而贴出私有项目信息
@@ -241,13 +241,12 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - **M2 ingest 重写**（✅ 2026-07-11 完成，含四视角对抗验证 31 条修复 + fixture vault E2E 实跑验收）：§8 全部 + scan.sh 可移植版（自足单文件可经 `ssh 'bash -s'` 直发远端；`--since/--until` 直传 git 零 shell 日期运算，`--until` 由调用方减 1 秒保半开语义；`touch -t` + `find -newer` 做 mtime 兜底；参数数组化防含空格作者名；可选 GNU timeout 保护）+ 标点门与日期门脚本随包
 - **M3 连接器**（✅ 2026-07-11 完成，含四视角对抗验证 30 条修复；feishu 组件级 fixture 实测 + github 真实账号实测）：github 收集器（发现 + 精扫两段式，账号维度作者过滤 + 已关联 email 盲区提示 + TRUNCATED / REPO_SKIP 降级信号）+ IM 连接器接口 v1（check 三态 / digest 行协议 / 隐私在采集层 / watchdog 超时）+ feishu 参考实现（实测 lark-cli 命令面）+ feishu-setup 与 worklog-import skill + ingest 跨源 hash 去重（7 位对齐 + 精确归并判据）+ init 存量迁移
 - **M4 收尾**（✅ 2026-07-11 完成，含三视角对抗验证 18 条修复；GETTING_STARTED 已在 M1 交付、三件套 drift CI 因 v0.4 canonical 迁入而废止）：query / lint / update / export 四 skill + README 产品叙事（中英双语）+ CI（bash -n / shellcheck / pytest / lint 自检）+ 极简 CONTRIBUTING 与双语 issue 模板
-- **M5 pilot 与发布**：种子用户试用（一个飞书重度 + 一个纯本机 / 无 IM；条件允许再加一个非飞书 IM 用户），企业飞书授权实测，`.claude/settings.json` allow 清单生效性实测（`:*` 前缀语法），按摩擦迭代；公开发布前过对抗式泄漏审计（含 git 历史 Author email 处理：squash 或改 noreply 地址；personal-skills 侧 stub 指针同日落地）
+- **M5 pilot 与发布**（发布动作已于 2026-07-12 提前完成，详见修订记录 v0.5）：翻 public + 开 template 已上线，翻 public 前过泄漏飞检（全仓红线词扫描仅命中 LICENSE 公开署名；git 历史 Author email 与已公开 personal-skills 一致、不构成新增泄漏，原「squash 或改 noreply」处理项消解且已被「禁改已 push 历史」红线取代；personal-skills 侧 stub 落地已解锁）。余项进行中：种子用户试用（朋友已提前进场，其反馈按最高优先级处理；补齐一个纯本机 / 无 IM 用户，条件允许再加一个非飞书 IM 用户），企业飞书授权实测，`.claude/settings.json` allow 清单生效性实测（`:*` 前缀语法），按摩擦迭代
 
 ## 16. 开放问题
 
-- pilot 人选待定
+- pilot 人选：一位朋友已提前进场（2026-07-12 起），其余人选待定
 - skill 指令面目前 zh 单语（模板与产出语言已按 config `language` 分流，en 用户执行正确性依赖模型双语能力）：是否翻译 SKILL 全集待 pilot 反馈定
-- 发布时机：GitHub 私仓已建（2026-07-11），M5 过对抗式泄漏审计（含本 PRD 与 git 全历史）后翻 public + 开 template 开关
 - 第二个 IM 连接器（slack / 企业微信）的时机与归属（维护者 or 社区）
 
 ## 17. 依赖与许可
@@ -262,6 +261,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 ## 修订记录
 
+- **v0.5（2026-07-12）提前公开**：应种子用户直接从 GitHub 取用的需求，提前翻 public + 开 template，未走完原定 dogfood → pilot → 审计顺序。翻 public 前过泄漏飞检：全仓 `LC_ALL=C` 红线词扫描仅命中 LICENSE 公开署名（保留）；commit message 干净；git author email 与已公开 personal-skills 一致，不构成新增泄漏，M5「git 历史 Author email 处理」项消解。由此红线升级：本仓内容从「默认将来公开」变为「即时公开」（每次 push 前自查 diff 与 commit message）；禁止随意改写已 push 历史（外部用户可能已 clone，force push 前先评估影响）。§15 M5、§16 发布时机与 DEV.md 红线同步。
 - **v0.4（2026-07-11）工作流 skill canonical 迁入**：三件套（aireadme / stash / pitfalls）与 project-lifecycle.md 的 canonical 维护地从 personal-skills 迁入本仓（§4.2 三步演化至终态），跨仓 sync 机制整体取消；personal-skills 留目录 stub + 顶层指针表，story-writer 留守，worklog-ingest 公开骨架废弃为指针；GitHub 私仓即刻建立，M5 审计后翻 public。
 - **v0.3（2026-07-11）项目发现与记录同意**：确立「发现 ≠ 记录」（§6.4）。没有人能枚举用户机器上的私有项目（维护者不能、用户自己也未必能），故发现全自动、记录须同意：四级记录级别（detail / summary / presence / exclude）+ init 扫描预览定级 + 新项目安全默认 presence + 项目侧 `.worklogignore` 否决权 + 非 git 项目显式声明 + slug 冲突规则；§9 增补零遥测与脱敏诊断。这是维护者「RAG 排除 / 特定项目不进扫描列表 / 无 git 项目特批」等个人实践的产品化。
 - **v0.2（2026-07-11）通用化修正**：产品定位从「给朋友用」升级为「任何人拿来即用」。四处修正：① 定位与目标用户改为能力定义（硬前提只有 Claude Code + git），朋友画像降为种子用户；② 飞书从一等必选模块降为 IM 连接器接口（§6.3）的首个参考实现，不配 IM 也完全可用；③ 三件套从「init 运行时在线拉取」反转为「vendor 固定版本快照随模板分发」（通用产品必须自包含）；④ 确立「仓根即模板」架构，开发文档隔离 `docs/dev/`，根 CLAUDE.md 为面向用户的产品件；另：契约骨架增加 zh / en 双 locale 模板。

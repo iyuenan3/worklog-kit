@@ -4,7 +4,7 @@
 
 > Tell Claude "log today" before bed. Wake up to a written diary, an updated wiki, a reviewed todo list, and a commit.
 
-worklog-kit is a turn-key template for a **personal project brain**: one "parent project" repo that holds the daily activity and long-term knowledge of all your projects. The diary compiles itself, knowledge settles on its own, everything runs unattended, and the data never leaves your own private git repo.
+worklog-kit is a turn-key template for a **personal project brain**: one "parent project" repo that holds the daily activity and long-term knowledge of all your projects. The diary compiles itself, knowledge accumulates on its own, everything runs unattended, and the data never leaves your own private git repo.
 
 It is the official reference implementation of the [project-lifecycle methodology](docs/methodology.md), built for **any Claude Code user**: no assumptions about your company, IM tool, or language; every personal difference is config or a connector.
 
@@ -16,7 +16,7 @@ Day-to-day use is a few sentences to Claude:
 |---|---|
 | "log today" plus a one-line brain-dump | Scans everywhere your work happens, compiles a structured diary, refreshes the wiki, reviews todos, commits; fully unattended |
 | "look up X" | Searches across diaries and wiki, answers with citations |
-| Drop a file, "into inbox" | PDF / Word / PPT converted to markdown, digested that night |
+| Drop a file, "into inbox" | PDF / Word / PPT converted to markdown; that night's diary references it, deep digestion on request |
 | "check" | Vault health check: contract anchors / credential leaks / broken links |
 | "upgrade skills" | Updates from upstream by release tag, never touches your data |
 | "export" | Everything out as toolchain-free plain markdown |
@@ -29,7 +29,7 @@ Where is "everywhere your work happens"? Local multi-root and multi-disk, GitHub
 2. Open it in Claude Code, say "initialize": answer "where does your work happen" and set a recording level for each discovered project
 3. Before bed, say "log today", then go to sleep
 
-> **Do not fork**: a fork of a public repo cannot be made private, so your diary would be public. Not hosting on GitHub is fine too: clone and set up your own private remote. Keep the repo private from then on; init and every nightly push run an automatic visibility check as a backstop.
+> **Do not fork**: a fork of a public repo cannot be made private, so your diary would be public. Not hosting on GitHub is fine too: clone and set up your own private remote. Keep the repo private from then on; with the GitHub CLI (gh) installed, init and every nightly push run an automatic visibility check as a backstop.
 
 ## It grows into your shape
 
@@ -57,7 +57,7 @@ The longer you use it, the less it looks like a template and the more it looks l
 
 ## Privacy (tight out of the box)
 
-- **Private by default**: init and every nightly push verify repo visibility and block if public
+- **Private by default**: with the GitHub CLI (gh) installed, init and every nightly push verify repo visibility and block if public; without gh there is no automatic check, so confirm the repo is private yourself
 - **Credential isolation**: keys never enter git (.gitignore preloaded, lint credential scan as backstop)
 - **Minimal IM recording**: only your own messages by default
 - **Consent before recording**: every discovered project is recorded in detail only after you set its level (detail / summary / presence / exclude)
@@ -65,7 +65,7 @@ The longer you use it, the less it looks like a template and the more it looks l
 
 ## Connecting an IM (optional)
 
-If you coordinate work over an IM, say "set up Feishu" at any time: the wizard walks you through installing the official lark-cli, QR-code auth, picking the chats to read, and a self-test pull. If your company tenant does not allow self-built apps, this connector is unavailable; skip it, everything else works. Feishu is the first reference implementation of the IM connector interface; Slack and others can be added per the interface doc (see previous section).
+If you coordinate work over an IM, say "set up Feishu" at any time: the wizard walks you through installing the official lark-cli, QR-code auth, picking the chats to read, and a self-test pull. If your company tenant does not allow self-built apps, this connector is unavailable; skip it, everything else works. Feishu is the first reference implementation of the IM connector interface; Slack and others can be added per the interface doc at `.claude/skills/worklog-ingest/connectors/README.md`.
 
 ## Status
 
@@ -76,7 +76,7 @@ If you coordinate work over an IM, say "set up Feishu" at any time: the wizard w
 - Hard requirements: a Claude Code subscription, basic git and terminal use (macOS / Linux; Windows via WSL, experimental)
 - Base environment: git ≥ 2.20, python3 ≥ 3.8, bash ≥ 3.2 (stock macOS qualifies)
 - Optional: GitHub CLI (platform collector; GitLab planned), an IM connector (Feishu via the official `@larksuite/cli` ships in v0.1; the interface is open for Slack and others)
-- Obsidian is strongly recommended as the viewer (everything works without it): a minimal `.obsidian/` config ships with the template, so installing the Tasks plugin gets you the todo dashboard and the backlink graph, and "look up X" automatically switches to the Obsidian CLI for retrieval when the app is running
+- Obsidian is strongly recommended as the viewer (everything works without it): a minimal `.obsidian/` config ships with the template, so installing the Tasks plugin gets you the todo dashboard (the backlink graph is built into Obsidian itself, no plugin needed); keyword searches in "look up X" automatically switch to the Obsidian CLI when the app is running, which is faster
 - Language: zh / en skeleton locales, chosen at init
 
 ## Troubleshooting

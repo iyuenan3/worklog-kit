@@ -48,7 +48,14 @@
       "Bash(gh search:*)",
       "Bash(uvx markitdown:*)",
       "Bash(export TZ=*)",
-      "Bash(obsidian:*)",
+      "Bash(obsidian search:*)",
+      "Bash(obsidian read:*)",
+      "Bash(obsidian files:*)",
+      "Bash(obsidian tags:*)",
+      "Bash(obsidian tag:*)",
+      "Bash(obsidian links:*)",
+      "Bash(obsidian tasks:*)",
+      "Bash(obsidian vault:*)",
       "Bash(open -ga Obsidian)"
     ]
   }

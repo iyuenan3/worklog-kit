@@ -12,7 +12,7 @@
 | 丢文件进来 / 「收进 inbox / 导入这个」 | 素材转 markdown 入 `inbox/` | worklog-import |
 | 「配置飞书 / 接入 IM」 | IM 连接器安装认证向导 | feishu-setup |
 | 「查 X」 | 跨日记 + wiki 检索（只读，答案带出处） | worklog-query |
-| 「检查 / lint」 | 契约锚点 / 凭证 / 断链 / frontmatter（zh 加标点与日期门） | worklog-lint |
+| 「检查 / lint」 | 契约锚点 / 凭证 / 断链 / frontmatter + 写作门（标点门仅 zh，日期门 zh / en 都跑） | worklog-lint |
 | 「升级 skill」 | 从 upstream 按 release tag 拉新版（只动 `.claude/skills/`，永不碰你的数据） | worklog-update |
 | 「导出 / 迁走」 | 全量导出为不依赖工具链的纯 markdown（退出通道） | worklog-export |
 

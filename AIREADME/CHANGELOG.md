@@ -2,6 +2,16 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · 第五轮 review 修复（workflow 对抗审查，2026-07-12）
+
+6 维 workflow 对抗 review（22 条原始 → 去重 16 条 → 每条 3 视角验证），11 条确认全处置、5 条驳倒不修（多 vault 串查 / 插件预启用信任 / OS 守卫措辞 / 触发词微差 / 树图省略均有既定依据）：
+
+### Fixed
+- **P0 收窄为最小权限**：settings.json `Bash(obsidian:*)` 通配符（放行含 eval / delete permanent / plugin:install 在内全部子命令且可跨 vault）改为查询型命令逐条白名单（search / read / files / tags / tag / links / tasks / vault）；增量风险本就有限（清单原有 bash:*），但执行层与 skill「只用查询型命令」口径应一致
+- **P1**：README 双语 inbox 行「当晚消化」改「当晚日记引用；深度消化说一声」（对齐 ingest / import / PRD 三处既有口径）；.gitignore `.obsidian/workspace*` 改 `.obsidian/*` + 两个模板文件白名单否定（防 Obsidian 自动生成配置弄脏 git status、被 ingest 残留规则误提交）
+- **P2**：README 双语 Obsidian 条目修正（CLI 仅关键词类检索走、删与「以文件为准」矛盾的「更准」、双链图谱归还 Obsidian 本体、en 补齐修饰语）；visibility 检测两处补「装有 gh」前提（原无条件语气，未装 gh 实际静默降级）；PRD（头部 / §15 / §16 / 修订记录 v0.5）与 DEV.md 红线同步「2026-07-12 已提前公开」现实，即时公开 + 禁改已 push 历史入红线；根 CLAUDE.md 双 locale 路由表 lint 行补齐第四轮口径（日期门 zh / en 都跑）；「接口文档见上一节」改直给路径
+- **P3**：en 直译腔两处（knowledge settles → accumulates；design intent, not off-road → all by design, not a deviation）
+
 ## Unreleased · Obsidian 可选集成（2026-07-12）
 
 「复用 Obsidian CLI」提议的评估落地：唯一真重叠处（query 的检索原语）吃满，无人值守铁律与通用性红线不动，Obsidian 保持非硬前提（PRD §14 否决项不变）：

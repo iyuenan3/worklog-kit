@@ -12,7 +12,7 @@
 | Drop a file / "into inbox / import this" | Convert material to markdown into `inbox/` | worklog-import |
 | "set up Feishu / connect IM" | IM connector install and auth wizard | feishu-setup |
 | "look up X" | Search across diaries + wiki (read-only, cited answers) | worklog-query |
-| "check / lint" | Contract anchors / credentials / broken links / frontmatter (zh adds punctuation and date gates) | worklog-lint |
+| "check / lint" | Contract anchors / credentials / broken links / frontmatter plus writing gates (punctuation gate zh only, date gate runs for zh and en) | worklog-lint |
 | "upgrade skills" | Pull new versions from upstream by release tag (touches `.claude/skills/` only, never your data) | worklog-update |
 | "export / move out" | Export everything as toolchain-free plain markdown (exit path) | worklog-export |
 
@@ -27,7 +27,7 @@
 ## Maintenance & self-development
 
 - Structural evolution is the design intent: apart from the anchors and contract files above, let everything grow with your usage; when it changes, run `/aireadme` to update `AIREADME/` (rationale into DECISIONS).
-- **Continuous self-development of this vault is welcome**: new diary sections, new wiki structures, and skills of your own (weekly reports / reviews / whatever your workflow needs) are design intent, not off-road. Put your own skills in `.claude/skills/<new-dir>/`; worklog-update never touches locally-added skills. Modifying kit-shipped skills is fine too: upgrades show a per-skill diff and you decide to overwrite or keep.
+- **Continuous self-development of this vault is welcome**: new diary sections, new wiki structures, and skills of your own (weekly reports / reviews / whatever your workflow needs) are all by design, not a deviation. Put your own skills in `.claude/skills/<new-dir>/`; worklog-update never touches locally-added skills. Modifying kit-shipped skills is fine too: upgrades show a per-skill diff and you decide to overwrite or keep.
 - New project / device / IM: add one entry under `sources` in `worklog.config.yaml`; when unsure about a level, start with `presence`.
 
 ---

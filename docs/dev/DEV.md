@@ -9,7 +9,8 @@
 
 ## 开发红线
 
-- **本仓一切内容默认将来公开**（含 commit message 与 git 全历史）：不得含维护者个人信息、客户 / 雇主名、具名设备、IM 群坐标、真实同事称呼。公开发布前过对抗式泄漏审计。
+- **本仓已公开（2026-07-12 起 public + template），一切内容即时对外可见**（含 commit message 与 git 全历史）：不得含维护者个人信息、客户 / 雇主名、具名设备、IM 群坐标、真实同事称呼；每次 push 前自查 diff 与 commit message。
+- **禁止随意改写已 push 的历史**：外部用户可能已 clone，任何 force push 前先停下评估影响并说明。
 - **通用性红线**（PRD 原则 2）：核心流程零特定 IM / 平台 / 语言 / 公司环境假设；评审任何改动先问「一个用 Slack、说英文、不在中国的陌生用户拿到后还能用吗」。
 - 冻结契约（PRD §5）改动必须同步 PRD，并评估对已铺出去的用户 vault 的兼容性。
 - 三件套（aireadme / stash / pitfalls）canonical 在本仓维护（personal-skills 侧指针于 kit 公开时落地），修改直接在本仓做。

@@ -18,8 +18,10 @@ id_rsa*
 id_ed25519*
 credentials*
 
-# 编辑器 / 系统
-.obsidian/workspace*
+# 编辑器 / 系统（.obsidian 只跟踪模板预置的两个文件，app 自动生成的其余配置不入 git）
+.obsidian/*
+!.obsidian/app.json
+!.obsidian/community-plugins.json
 .DS_Store
 node_modules/
 __pycache__/
