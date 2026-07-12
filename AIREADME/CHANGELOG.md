@@ -2,6 +2,17 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · vault 记忆维护（体检 + 修复，2026-07-12）
+
+摄入时编译架构的盲区补批处理维护工序（PRD §18；设计参考 InquisiMind/digital-life 的维护工序思想）：
+
+### Added
+- `lint.py --health` 健康节：五项零 LLM 指标（状态漂移 / 孤儿页 / 实体分裂候选 / 膨胀 / TODO 年龄），阈值读 config `maintenance:` 段（全可选、内置默认值，schema_version 不升版保老 vault 零动作兼容）；退出码 0 健康 / 2 有待维护项；`--today` 供测试固定时钟；alias 存根（frontmatter `alias_of:`）与 `wiki/archive/` 不参与体检、`#todo/stale` 已分诊任务不重复报（保证体检可归零）
+- ingest D.4 体检提醒行：超阈值才在当天日记末尾追加一行指引，健康时零痕迹；同日补充已有行则原地更新数字、清零改写不删行（日记只追加）
+- `worklog-maintain` skill（本功能唯一新增，双 locale 路由）：现场体检 → 按腐坏类型分批修复每类一 commit → 全门验收出小结；授权跟触发方式走（交互 = 明示授权直接修，无人值守只报告）；三红线（diaries 永不触碰 / wiki 只合并归档重链 / TODO 僵尸只标记）
+- 文档三小件：`docs/maintenance.md`（schedule 月度报告模式配方 + `~/.claude` memory 瘦身手工配方）、`docs/dev/deep-review.md`（深度 review 方法论占位，明确不产品化）
+- tests/test_health.py 12 例；fixture vault E2E：五类腐坏注入 6 项全检出 → 5 类修复（6 → 1 → 0）→ 提醒行三路径 → 四门全绿
+
 ## Unreleased · 第五轮 review 修复（workflow 对抗审查，2026-07-12）
 
 6 维 workflow 对抗 review（22 条原始 → 去重 16 条 → 每条 3 视角验证），11 条确认全处置、5 条驳倒不修（多 vault 串查 / 插件预启用信任 / OS 守卫措辞 / 触发词微差 / 树图省略均有既定依据）：

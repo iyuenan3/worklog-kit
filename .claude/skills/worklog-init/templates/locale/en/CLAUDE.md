@@ -12,7 +12,8 @@
 | Drop a file / "into inbox / import this" | Convert material to markdown into `inbox/` | worklog-import |
 | "set up Feishu / connect IM" | IM connector install and auth wizard | feishu-setup |
 | "look up X" | Search across diaries + wiki (read-only, cited answers) | worklog-query |
-| "check / lint" | Contract anchors / credentials / broken links / frontmatter plus writing gates (punctuation gate zh only, date gate runs for zh and en) | worklog-lint |
+| "check / lint" | Contract anchors / credentials / broken links / frontmatter plus writing gates (punctuation gate zh only, date gate runs for zh and en) plus the five checkup metrics | worklog-lint |
+| "maintain vault / vault upkeep / handle checkup items" | Batch maintenance: fresh checkup, then per-corruption-type repairs (merge / archive / relink, one commit per type) and acceptance; unattended triggers report only | worklog-maintain |
 | "upgrade skills" | Pull new versions from upstream by release tag (touches `.claude/skills/` only, never your data) | worklog-update |
 | "export / move out" | Export everything as toolchain-free plain markdown (exit path) | worklog-export |
 

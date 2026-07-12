@@ -30,6 +30,13 @@ modules:
 
 index_recent_days: 3           # how many days of summaries the wiki index header keeps
 
+maintenance:                   # vault checkup thresholds (lint --health / worklog-maintain; all optional, delete to use script defaults)
+  drift_days: 14               # drift: days a project page's last_updated may lag its latest diary mention
+  orphan_days: 60              # orphan page: no diary reference and no wiki inbound link for N days
+  bloat_kb: 50                 # bloat: max size of a single wiki page (KB)
+  decision_log_max: 30         # bloat: max entries in a project page's decision log
+  todo_stale_days: [30, 90]    # TODO age buckets: open tasks older than N days need attention
+
 diary_title_template: "# Work diary: {year}-{month}-{day} ({weekday})"   # {weekday} resolves to the full English weekday name (e.g. Saturday)
 
 # upstream_repo: https://github.com/iyuenan3/worklog-kit   # source for worklog-update; fork users point this at their upstream

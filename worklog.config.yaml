@@ -30,6 +30,13 @@ modules:
 
 index_recent_days: 3           # wiki index 头部保留最近几天的摘要
 
+maintenance:                   # vault 体检阈值（lint --health / worklog-maintain；全部可选，删掉即用脚本内置默认值）
+  drift_days: 14               # 状态漂移：项目页 last_updated 落后最近提及日记的天数
+  orphan_days: 60              # 孤儿页：N 天无日记引用且无 wiki 入链
+  bloat_kb: 50                 # 膨胀：单个 wiki 页体积上限（KB）
+  decision_log_max: 30         # 膨胀：项目页决策日志条数上限
+  todo_stale_days: [30, 90]    # TODO 年龄分档：开放任务超过 N 天报待维护
+
 diary_title_template: "# 工作日记：{year}年{month}月{day}日（{weekday}）"   # {weekday} 解析为 周X（与 frontmatter day 及日期门校验一致）
 
 # upstream_repo: https://github.com/iyuenan3/worklog-kit   # worklog-update 拉取源；fork 用户改成自己的上游

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""worklog vault lint（通用机械项）。
+"""worklog vault lint（通用机械项 + 健康节）。
 
 用法:
-    python3 lint.py [--vault <dir>]     # 缺省: git toplevel，再退 cwd
+    python3 lint.py [--vault <dir>]                     # 正误节。缺省 vault: git toplevel，再退 cwd
+    python3 lint.py --health [--vault <dir>] [--today YYYY-MM-DD]   # 健康节（vault 体检，PRD §18）
 
-检查项与级别（与 check.sh 系约定一致：🔴 must-fix → exit 1；🟡 advisory → exit 0）:
+正误节检查项与级别（与 check.sh 系约定一致：🔴 must-fix → exit 1；🟡 advisory → exit 0）:
   🔴 契约锚点缺失: wiki/index.md 三段标题 / wiki/log.md ingest 锚点 / wiki/todos.md 分区（zh/en 任一 locale 命中即可）
   🔴 疑似凭证泄漏: diaries/ wiki/ inbox/ 与两层 config（模式含 sk- / ghp_ / AKIA / Bearer / api_key= 等，含截断 token 前缀风险）
   🔴 diary frontmatter 缺 date
@@ -12,17 +13,41 @@
   🟡 项目页 frontmatter 缺 last_updated / source_count / diaries
   🟡 wiki/log.md 超 1500 行（该按年轮转了）
 
+健康节（--health）: 五项腐坏指标，零 LLM 纯脚本，阈值读 config `maintenance:` 段（缺省用内置默认）:
+  🩺 状态漂移 / 孤儿页 / 实体分裂候选 / 膨胀（体积 + 决策日志条数）/ TODO 年龄
+  退出码: 0 = 健康，2 = 有待维护项（1 保留给正误节 must-fix）；末行 `🩺 N 项待维护` 供脚本消费。
+  --today 供测试固定「今天」；缺省按 config timezone 取当日。
+
 zh 写作门（标点 / 日期）不在本脚本：由 worklog-lint SKILL 按 config language 追加调用。
 """
+import datetime
 import os
 import re
 import sys
 import subprocess
+import unicodedata
 
 
-def vault_root(argv):
-    if len(argv) >= 3 and argv[1] == "--vault":
-        return os.path.abspath(argv[2])
+def parse_argv(argv):
+    vault, health, today = None, False, None
+    i = 1
+    while i < len(argv):
+        a = argv[i]
+        if a == "--vault" and i + 1 < len(argv):
+            vault = os.path.abspath(argv[i + 1])
+            i += 2
+        elif a == "--health":
+            health = True
+            i += 1
+        elif a == "--today" and i + 1 < len(argv):
+            today = argv[i + 1]
+            i += 2
+        else:
+            i += 1
+    return vault, health, today
+
+
+def default_root():
     try:
         out = subprocess.run(["git", "rev-parse", "--show-toplevel"],
                              capture_output=True, text=True, check=True)
@@ -55,8 +80,7 @@ def md_files(root, sub):
                 yield os.path.join(dirpath, f)
 
 
-def main():
-    root = vault_root(sys.argv)
+def main(root):
     hard, soft = [], []
 
     # 1. 契约锚点
@@ -159,5 +183,246 @@ def main():
     return 1 if hard else 0
 
 
+# ── 健康节（--health）：五项腐坏指标，零 LLM（PRD §18；断链等正误项归上方正误节，不在此重复） ──
+
+HEALTH_DEFAULTS = {
+    "drift_days": 14,          # 状态漂移：项目页 last_updated 落后最近提及日记的天数
+    "orphan_days": 60,         # 孤儿页：N 天无日记引用且无 wiki 入链
+    "bloat_kb": 50,            # 膨胀：单页体积（KB）
+    "decision_log_max": 30,    # 膨胀：项目页决策日志条数
+    "todo_stale_days": [30, 90],  # TODO 年龄分档
+}
+DATE_FULL_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+DECISION_HEADS = ("决策日志", "Decision log")
+
+
+def _parse_scalar(v):
+    v = v.split("#", 1)[0].strip()
+    if v.startswith("[") and v.endswith("]"):
+        out = []
+        for part in v[1:-1].split(","):
+            part = part.strip()
+            if part:
+                try:
+                    out.append(int(part))
+                except ValueError:
+                    pass
+        return out or None
+    try:
+        return int(v)
+    except ValueError:
+        return v.strip("'\"") or None
+
+
+def load_health_config(root):
+    """读两层 config 的 maintenance: 块（local 覆盖同名键）+ 顶层 timezone。全键可选，缺省用默认值。"""
+    cfg = dict(HEALTH_DEFAULTS)
+    tz = None
+    for name in ("worklog.config.yaml", "worklog.config.local.yaml"):
+        p = os.path.join(root, name)
+        if not os.path.isfile(p):
+            continue
+        in_block = False
+        for raw in open(p, encoding="utf-8", errors="replace"):
+            line = raw.rstrip("\n")
+            if not line.startswith((" ", "\t")):
+                if line.startswith("timezone:"):
+                    v = _parse_scalar(line.split(":", 1)[1])
+                    if isinstance(v, str):
+                        tz = v
+                in_block = line.split("#", 1)[0].strip() == "maintenance:"
+                continue
+            if not in_block:
+                continue
+            s = line.strip()
+            if not s or s.startswith("#") or ":" not in s:
+                continue
+            k, v = s.split(":", 1)
+            k = k.strip()
+            if k in HEALTH_DEFAULTS:
+                pv = _parse_scalar(v)
+                if isinstance(HEALTH_DEFAULTS[k], list):
+                    if isinstance(pv, list) and pv:
+                        cfg[k] = sorted(pv)
+                elif isinstance(pv, int):
+                    cfg[k] = pv
+    return cfg, tz
+
+
+def _frontmatter(text):
+    if not text.startswith("---"):
+        return {}
+    out = {}
+    for line in text.splitlines()[1:80]:
+        if line.strip() == "---":
+            break
+        if ":" in line and not line.startswith((" ", "\t")):
+            k, v = line.split(":", 1)
+            out[k.strip()] = v.strip()
+    return out
+
+
+def _to_date(s):
+    m = DATE_FULL_RE.search(s or "")
+    if not m:
+        return None
+    try:
+        return datetime.date.fromisoformat(m.group(0))
+    except ValueError:
+        return None
+
+
+def _links(text):
+    """提取 wikilink 目标，剥代码块与行内代码（与正误节断链检查同规）。"""
+    t = re.sub(r"```.*?```", "", text, flags=re.S)
+    t = re.sub(r"`[^`\n]*`", "", t)
+    return {m.group(1).strip() for m in WIKILINK_RE.finditer(t) if m.group(1).strip()}
+
+
+def _norm(name):
+    """形态学归一化（分裂候选用）：NFKC 折叠全半角 + 小写 + 去空格连字符下划线。中英别名超出机械能力，留给 maintain 的 LLM。"""
+    s = unicodedata.normalize("NFKC", name).lower()
+    return re.sub(r"[\s\-_]+", "", s)
+
+
+def run_health(root, today_arg):
+    cfg, tz = load_health_config(root)
+    if today_arg:
+        today = datetime.date.fromisoformat(today_arg)
+    else:
+        if tz:
+            os.environ["TZ"] = tz
+            try:
+                import time as _time
+                _time.tzset()
+            except AttributeError:
+                pass  # 非 Unix 平台无 tzset；产品面仅 macOS / Linux
+        today = datetime.date.today()
+
+    items = []
+
+    # 素材收集
+    diaries = {}
+    for p in md_files(root, "diaries"):
+        b = os.path.basename(p)
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}\.md", b):
+            d = _to_date(b)
+            if d:
+                diaries[d] = open(p, encoding="utf-8", errors="replace").read()
+    diary_links = {d: _links(t) for d, t in diaries.items()}
+
+    wiki = {}
+    for p in md_files(root, "wiki"):
+        rel = os.path.relpath(p, root).replace(os.sep, "/")
+        wiki[rel] = open(p, encoding="utf-8", errors="replace").read()
+
+    def stem(rel):
+        return os.path.splitext(os.path.basename(rel))[0]
+
+    def structural(rel):
+        s = stem(rel)
+        return rel.count("/") == 1 and (s in ("index", "todos") or s == "log" or s.startswith("log-"))
+
+    def archived(rel):
+        return rel.startswith("wiki/archive/")
+
+    fm = {rel: _frontmatter(t) for rel, t in wiki.items()}
+    alias_pages = {rel for rel, f in fm.items() if f.get("alias_of")}
+    alias_stems = {stem(rel) for rel in alias_pages}
+    wiki_links = {rel: _links(t) for rel, t in wiki.items() if not archived(rel)}
+    live = sorted(rel for rel in wiki
+                  if not structural(rel) and not archived(rel) and rel not in alias_pages)
+
+    # 1. 状态漂移（项目页 last_updated vs 最近提及它的日记）
+    for rel in live:
+        if not rel.startswith("wiki/projects/"):
+            continue
+        lu = _to_date(fm[rel].get("last_updated", ""))
+        mentions = [d for d, links in diary_links.items() if stem(rel) in links]
+        if lu and mentions:
+            gap = (max(mentions) - lu).days
+            if gap > cfg["drift_days"]:
+                items.append(f"状态漂移: {rel} last_updated {lu} 落后最近提及日记 {max(mentions)}"
+                             f"（{gap} 天 > {cfg['drift_days']}）")
+
+    # 2. 孤儿页（窗口内无日记引用 + 无 wiki 入链 + 页本身也不新鲜）
+    for rel in live:
+        st = stem(rel)
+        inbound = any(st in links for r2, links in wiki_links.items() if r2 != rel)
+        recent = any(st in links and (today - d).days <= cfg["orphan_days"]
+                     for d, links in diary_links.items())
+        lu = _to_date(fm[rel].get("last_updated", ""))
+        if not inbound and not recent and (lu is None or (today - lu).days > cfg["orphan_days"]):
+            items.append(f"孤儿页: {rel} {cfg['orphan_days']} 天内无日记引用且无 wiki 入链（可归档或补入链）")
+
+    # 3. 实体分裂候选（活跃链接面：近窗日记 + 存活 wiki + 存活页名；alias 存根 = 已处理别名，跳过）
+    active_names = set()
+    for d, links in diary_links.items():
+        if (today - d).days <= cfg["orphan_days"]:
+            active_names |= links
+    for rel in wiki:
+        if not archived(rel) and rel not in alias_pages:
+            active_names |= wiki_links.get(rel, set())
+    active_names |= {stem(rel) for rel in live}
+    groups = {}
+    for name in active_names:
+        if DATE_FULL_RE.fullmatch(name) or name in alias_stems:
+            continue
+        key = _norm(name)
+        if key:
+            groups.setdefault(key, set()).add(name)
+    for key in sorted(groups):
+        forms = groups[key]
+        if len(forms) >= 2:
+            items.append(f"实体分裂候选: {' / '.join(sorted(forms))}（归一化后同名，建议合并重链）")
+
+    # 4. 膨胀（体积 + 项目页决策日志条数）
+    for rel in live:
+        kb = os.path.getsize(os.path.join(root, rel)) / 1024
+        if kb > cfg["bloat_kb"]:
+            items.append(f"膨胀: {rel} {kb:.0f}KB > {cfg['bloat_kb']}KB（建议历史段归档拆分）")
+    for rel in live:
+        if not rel.startswith("wiki/projects/"):
+            continue
+        n, inside = 0, False
+        for line in wiki[rel].splitlines():
+            if line.startswith("#"):
+                inside = any(h in line for h in DECISION_HEADS)
+                continue
+            if inside and re.match(r"\s*- ", line):
+                n += 1
+        if n > cfg["decision_log_max"]:
+            items.append(f"膨胀: {rel} 决策日志 {n} 条 > {cfg['decision_log_max']}（建议老条目归档）")
+
+    # 5. TODO 年龄（开放任务按分档计数；无日期 token 的无法测龄跳过；
+    #    已带 #todo/stale 标记 = maintain 已分诊过的僵尸，跳过防止体检永不归零）
+    todo_text = wiki.get("wiki/todos.md", "")
+    token_date_re = re.compile(r"[➕📅⏳🛫]\s*(\d{4}-\d{2}-\d{2})")
+    aged = []
+    for line in todo_text.splitlines():
+        m = re.match(r"^\s*- \[ \] (.+)$", line)
+        if not m or "#todo/stale" in line:
+            continue
+        dates = [d for d in (_to_date(x) for x in token_date_re.findall(m.group(1))) if d]
+        if dates:
+            aged.append(((today - min(dates)).days, m.group(1).strip()))
+    remaining = aged
+    for bound in sorted(cfg["todo_stale_days"], reverse=True):
+        hit = [(a, s) for a, s in remaining if a > bound]
+        remaining = [(a, s) for a, s in remaining if a <= bound]
+        if hit:
+            oldest = max(hit)
+            items.append(f"TODO 年龄: 超 {bound} 天未完成 {len(hit)} 条（最老 {oldest[0]} 天：{oldest[1][:40]}）")
+
+    for it in items:
+        print(f"🩺 {it}")
+    print("----")
+    tail = "（说「维护 vault」处理；阈值可在 worklog.config.yaml 的 maintenance 段调整）" if items else ""
+    print(f"🩺 {len(items)} 项待维护{tail}")
+    return 2 if items else 0
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    _vault, _health, _today = parse_argv(sys.argv)
+    _root = _vault or default_root()
+    sys.exit(run_health(_root, _today) if _health else main(_root))

@@ -149,10 +149,11 @@ frontmatter: date / day(周X 或 weekday) / projects[](= 正文提及的项目 s
 ### D.4 commit + push
 
 1. **标点门**（zh）：对本次改动的 md 跑 punctuation_check，干净才继续
-2. **visibility 检测**：`gh api repos/{owner}/{repo} --jq .visibility`；结果为 public → **中断 push**，`.ingest-status.md` 红色警告「仓库是公开的！先改 Private 再触发」；三态降级：无 gh / 无 remote / gh api 调用失败（含未认证、网络错）→ 跳过检测 + 报告注明（附 `gh auth login` 自救命令），照常继续
-3. commit：格式按 language。zh：`<前缀> <M/D> 日记(<主线>)`，例 `ingest: 7/11 日记(重构登录流程)`，前缀 = `ingest:` / `ingest-补:` / `ingest-改:` / `ingest-回填:`；en：`<prefix> <Mon DD> diary(<mainline>)`，prefix = `ingest:` / `ingest-amend:` / `ingest-edit:` / `ingest-backfill:`。正文列 wiki 触点；尾行固定格式 `Co-Authored-By: <模型显示名> <noreply@anthropic.com>`（显示名取 harness 给出的名称如「Claude Opus 4.6」，去掉 context 后缀与 model id slug；取不到就写「Claude」）
-4. push：Step 0 拉取成功且 remote 存在才推；否则跳过 + status 提示
-5. 删锁：`rm -f .ingest.lock`（固定用这条命令形态，权限清单已预批）
+2. **体检提醒**（静默条件行）：`python3 .claude/skills/worklog-lint/scripts/lint.py --health`（脚本不存在或执行失败 → 静默跳过，不拖垮 ingest）。末行 `🩺 N 项待维护` 的 N > 0 才在当天日记末尾追加一行（zh：`> vault 体检：N 项待维护，说「维护 vault」处理`；en：`> Vault checkup: N items need maintenance; say "maintain vault" to handle them`）；N = 0 且日记无既有体检行 → 完全静默、日记零痕迹。补充 / 更新模式下日记已有体检行 → 原地更新数字，绝不重复追加；此时 N 降为 0 则原地改为 `> vault 体检：已处理，当前无待维护项`（en：`> Vault checkup: handled, nothing pending`），不删行（日记只追加）
+3. **visibility 检测**：`gh api repos/{owner}/{repo} --jq .visibility`；结果为 public → **中断 push**，`.ingest-status.md` 红色警告「仓库是公开的！先改 Private 再触发」；三态降级：无 gh / 无 remote / gh api 调用失败（含未认证、网络错）→ 跳过检测 + 报告注明（附 `gh auth login` 自救命令），照常继续
+4. commit：格式按 language。zh：`<前缀> <M/D> 日记(<主线>)`，例 `ingest: 7/11 日记(重构登录流程)`，前缀 = `ingest:` / `ingest-补:` / `ingest-改:` / `ingest-回填:`；en：`<prefix> <Mon DD> diary(<mainline>)`，prefix = `ingest:` / `ingest-amend:` / `ingest-edit:` / `ingest-backfill:`。正文列 wiki 触点；尾行固定格式 `Co-Authored-By: <模型显示名> <noreply@anthropic.com>`（显示名取 harness 给出的名称如「Claude Opus 4.6」，去掉 context 后缀与 model id slug；取不到就写「Claude」）
+5. push：Step 0 拉取成功且 remote 存在才推；否则跳过 + status 提示
+6. 删锁：`rm -f .ingest.lock`（固定用这条命令形态，权限清单已预批）
 
 ## Step E · 晨起报告 + 观测
 

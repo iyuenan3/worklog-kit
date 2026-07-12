@@ -1,6 +1,6 @@
 ---
 name: worklog-lint
-description: vault 健康检查。用户说「检查 / lint / 体检」时触发：跑通用机械项（契约锚点 / 凭证扫描 / 断链 / frontmatter / log 轮转阈值）+ 写作门（标点门仅 language zh 跑，日期门 zh / en 都跑）；报告 must-fix 与 advisory，经确认后可代修。
+description: vault 健康检查。用户说「检查 / lint / 体检」时触发：跑通用机械项（契约锚点 / 凭证扫描 / 断链 / frontmatter / log 轮转阈值）+ 写作门（标点门仅 language zh 跑，日期门 zh / en 都跑）+ 健康节（--health 五项维护指标：漂移 / 孤儿 / 分裂 / 膨胀 / TODO 年龄）；报告 must-fix 与 advisory，经确认后可代修；健康项修复归 worklog-maintain。
 ---
 
 # worklog-lint：vault 健康检查
@@ -24,8 +24,16 @@ python3 .claude/skills/worklog-ingest/scripts/punctuation_check.py <改动过的
 python3 .claude/skills/worklog-ingest/scripts/date_weekday_check.py --all
 ```
 
-3. **报告**：按 🔴 / 🟡 分组列出，每条附一句「怎么修」；🔴 建议当场修（凭证类必须当场处理并提醒若已 push 需轮换该凭证），🟡 尊重用户节奏。
-4. **修复**（经确认）：逐项修，修完重跑对应检查验证归零。
+3. **健康节**（体检，非正误项）：
+
+```bash
+python3 .claude/skills/worklog-lint/scripts/lint.py --health
+```
+
+🩺 项是维护建议不是错误（退出码 2 = 有待维护项，不算 lint 失败；0 = 健康）：状态漂移 / 孤儿页 / 实体分裂候选 / 膨胀 / TODO 年龄五项，阈值在 config `maintenance:` 段（缺省用脚本内置默认值）。
+
+4. **报告**：按 🔴 / 🟡 / 🩺 分组列出，🔴 🟡 每条附一句「怎么修」；🔴 建议当场修（凭证类必须当场处理并提醒若已 push 需轮换该凭证），🟡 尊重用户节奏；🩺 指引「说『维护 vault』处理」（修复归 worklog-maintain，本 skill 不代修健康项）。
+5. **修复**（经确认，仅 🔴 🟡）：逐项修，修完重跑对应检查验证归零。
 
 ## 边界
 
