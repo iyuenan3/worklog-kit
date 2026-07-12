@@ -2,6 +2,18 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · Obsidian 可选集成（2026-07-12）
+
+「复用 Obsidian CLI」提议的评估落地：唯一真重叠处（query 的检索原语）吃满，无人值守铁律与通用性红线不动，Obsidian 保持非硬前提（PRD §14 否决项不变）：
+
+### Added
+- worklog-query 新增「Obsidian CLI 优先」检索通道：探测（`command -v` + 只读命令试跑）→ macOS 后台拉起（`open -ga`，不抢焦点，回答里提一句）→ 静默回退 rg / grep；只用查询型命令，绝不用会弹前台的 open / daily
+- 模板补齐最小 `.obsidian/` 配置（app.json + community-plugins.json 预启用 Tasks）：装上 Tasks 插件即得 TODO 聚合视图，兑现 PRD §14「推荐查看器附最小配置」的既有承诺
+- settings.json 补 `Bash(obsidian:*)` 与 `Bash(open -ga Obsidian)` 两条 allow
+
+### Changed
+- README 双语 Obsidian 推荐语加重为独立条目（强烈推荐但保持可选，说明 CLI 加速与 Tasks 即装即用）；PRD §7 query 行同步检索通道口径
+
 ## Unreleased · README 可读性重构（2026-07-12）
 
 ### Changed

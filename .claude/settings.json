@@ -47,7 +47,9 @@
       "Bash(gh api:*)",
       "Bash(gh search:*)",
       "Bash(uvx markitdown:*)",
-      "Bash(export TZ=*)"
+      "Bash(export TZ=*)",
+      "Bash(obsidian:*)",
+      "Bash(open -ga Obsidian)"
     ]
   }
 }

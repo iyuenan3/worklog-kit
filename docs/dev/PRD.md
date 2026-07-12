@@ -163,7 +163,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 | worklog-ingest | 见 §8 |
 | worklog-import | `uvx markitdown` 转换 docx / PDF / pptx 等入 `inbox/`；图片 LLM 描述默认关；ingest 不自动扫 inbox（防耗时爆炸），只引用当天新增条目 |
 | feishu-setup | §6.3 连接器接口的首个参考实现 |
-| worklog-query | 「查 X」跨日记 + wiki 检索行为显式化 |
+| worklog-query | 「查 X」跨日记 + wiki 检索行为显式化；检索优先走 Obsidian CLI（app 在运行时；macOS 可 `open -ga` 后台拉起），不可用静默回退 rg / grep，Obsidian 始终非硬前提 |
 | worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；写作门随包：标点门（punctuation_check.py）仅 `language: zh` 加载，日期门（date_weekday_check.py）zh / en 都跑；个人演化项不进 kit |
 | worklog-update | 镜像同步 `.claude/skills/` 白名单路径（含三件套统一经此更新），其余 hard deny（§12）；上游地址可经 config `upstream_repo` 覆盖（fork 用户） |
 | worklog-export | 退出通道（§9.5）：wikilink 转普通链接 + 移除 Tasks 查询块与行尾元数据 emoji，产物为不依赖工具链的纯 markdown |

@@ -75,7 +75,8 @@ If you coordinate work over an IM, say "set up Feishu" at any time: the wizard w
 
 - Hard requirements: a Claude Code subscription, basic git and terminal use (macOS / Linux; Windows via WSL, experimental)
 - Base environment: git ≥ 2.20, python3 ≥ 3.8, bash ≥ 3.2 (stock macOS qualifies)
-- Optional: GitHub CLI (platform collector; GitLab planned), an IM connector (Feishu via the official `@larksuite/cli` ships in v0.1; the interface is open for Slack and others), Obsidian (recommended viewer)
+- Optional: GitHub CLI (platform collector; GitLab planned), an IM connector (Feishu via the official `@larksuite/cli` ships in v0.1; the interface is open for Slack and others)
+- Obsidian is strongly recommended as the viewer (everything works without it): a minimal `.obsidian/` config ships with the template, so installing the Tasks plugin gets you the todo dashboard and the backlink graph, and "look up X" automatically switches to the Obsidian CLI for retrieval when the app is running
 - Language: zh / en skeleton locales, chosen at init
 
 ## Troubleshooting
