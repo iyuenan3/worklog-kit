@@ -40,7 +40,7 @@ worklog-kit 是 `project-lifecycle` 方法论的**官方参考实现与 canonica
 worklog-kit/                      # 仓根 = 用户 vault 模板
 ├── README.md                     # 产品叙事（project-lifecycle 简版 + 链接完整版）
 ├── CLAUDE.md                     # vault router（产品件，面向使用者）
-├── AIREADME/                     # 极简预置（aireadme skill 可维护）
+├── AIREADME/                     # 极简预置（aireadme skill 可维护）；CHANGELOG 承载 kit 发布史 + vault 版本单一流
 ├── worklog.config.yaml           # 入 git：数据源 / 扫描根 / 时区 / locale / 模块开关（无任何凭证）
 ├── worklog.config.local.yaml     # 不入 git：敏感字段（.gitignore 预置）
 ├── .claude/settings.json         # 权限 allow 清单（无人值守前提，不开 bypass）
@@ -64,13 +64,13 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
     └── pitfalls/                 # canonical 在此维护
 ```
 
-> 图中省略：开发 / CI 基建（`.github/` 含 CI、issue 模板与 CONTRIBUTING；`tests/`）与标准 OSS 文件（`LICENSE`、`CHANGELOG.md`、`README.en.md`）。locale 模板（zh / en 骨架件）在 `.claude/skills/worklog-init/templates/locale/`，随 init skill 分发与升级。
+> 图中省略：开发 / CI 基建（`.github/` 含 CI、issue 模板与 CONTRIBUTING；`tests/`）与标准 OSS 文件（`LICENSE`、`README.en.md`）。locale 模板（zh / en 骨架件）在 `.claude/skills/worklog-init/templates/locale/`，随 init skill 分发与升级。版本史在 `AIREADME/CHANGELOG.md`（kit 发布史与 vault schema 演进单一流，2026-07-12 合并，根级 CHANGELOG.md 撤销）。
 
 ### 4.2 工作流 skill 的 canonical 家 = 本仓（v0.4 定稿）
 
 - 三件套（aireadme / stash / pitfalls）与 `project-lifecycle.md` 方法论文档 **canonical 迁入本仓维护**：skill 在 `.claude/skills/`（随模板分发），方法论在 `docs/methodology.md`；`worklog-init` 把三件套从 vault 内 cp 到 `~/.claude/skills/` 全局安装（已存在则比对提示覆盖 / 跳过），**全程无运行时网络拉取**
 - 决策三步演化到终态：v0.1「init 在线拉 personal-skills」（省维护者同步成本，被通用性否决）→ v0.2「vendor 快照 + sync 脚本」（自包含，但留下两个公共真相源的永久同步负担）→ v0.4「canonical 迁入」（kit 开源且长期维护，真相源归一，sync-upstream.sh 与 drift 检查整体取消）
-- personal-skills 侧「软连接」：迁走的每个目录留 stub README（已迁至 worklog-kit，此处停止更新）+ 顶层 README 改指针表；story-writer 留守（不属于本产线）；worklog-ingest 公开骨架废弃为指针（由本仓通用重写版取代，顺带了结其「仅作参考不建议使用」的尴尬身份）；git 历史不搬（personal-skills 公开仓历史永久可考古），本仓 CHANGELOG 记 provenance
+- personal-skills 侧「软连接」：迁走的每个目录留 stub README（已迁至 worklog-kit，此处停止更新）+ 顶层 README 改指针表；story-writer 留守（不属于本产线）；worklog-ingest 公开骨架废弃为指针（由本仓通用重写版取代，顺带了结其「仅作参考不建议使用」的尴尬身份）；git 历史不搬（personal-skills 公开仓历史永久可考古），本仓 `AIREADME/CHANGELOG.md` 记 provenance
 - 三件套可单独取用：README 逐个给安装命令，不强制整套采纳（照顾「只想要 aireadme」的用户）
 - pitfalls「高危活前先查」全局纪律行仍**经用户确认后**追加进用户 `~/.claude/CLAUDE.md`（追加前检查该行是否已存在，绝不覆盖已有内容）
 

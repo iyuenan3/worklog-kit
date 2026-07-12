@@ -4,7 +4,7 @@
 
 - 需求 / 规格真相源：[`PRD.md`](PRD.md)（含冻结契约 §5、ingest 重写规格 §8、修订记录）
 - 方法论：[`../methodology.md`](../methodology.md)（产品件，随模板分发）
-- 版本史：[`../../CHANGELOG.md`](../../CHANGELOG.md)
+- 版本史：[`../../AIREADME/CHANGELOG.md`](../../AIREADME/CHANGELOG.md)（kit 发布史与 vault 版本单一流，2026-07-12 起）
 - 里程碑：PRD §15（M1 模板骨架 → M2 ingest 重写 → M3 连接器 → M4 收尾 → M5 pilot 与发布）
 
 ## 开发红线
@@ -17,5 +17,5 @@
 
 ## 惯例
 
-- git 直接提 `main`；发布走 release tag（worklog-update 的拉取单位）。tag 格式 = semver `vX.Y.Z`；打 tag 时把 CHANGELOG 对应 Unreleased 段改为「vX.Y.Z（日期）」，两者一一对应。
+- git 直接提 `main`；发布走 release tag（worklog-update 的拉取单位）。tag 格式 = semver `vX.Y.Z`；打 tag 时把 `AIREADME/CHANGELOG.md` 对应 Unreleased 段改为「vX.Y.Z（日期）」，两者一一对应。
 - 借鉴维护者私有实现时只搬骨架不搬数据，任何本机路径不得写进产品件。

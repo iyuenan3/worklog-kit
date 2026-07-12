@@ -16,7 +16,7 @@
 | ROADMAP | ⚑ | 待你的第一批计划 |
 | DECISIONS | ⚑ | append-only，随 schema 演化记录 |
 | MEMORY | ⚑ | append-only，随踩坑记录 |
-| CHANGELOG | ⚑ | append-only，随里程碑记录 |
+| CHANGELOG | ⚑ | append-only；kit 发布史与 vault 版本单一流 |
 
 ## 按任务读
 - 了解这个 vault → CORE + ARCHITECTURE
