@@ -2,6 +2,17 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · 第四轮 review 修复（重构回归 + 实排演，2026-07-12）
+
+6 视角（3 实跑重演 + 3 深读），12 条原始收敛为 5 条确认全处置；init / ingest / update 实排演零功能性破坏：
+
+### Fixed
+- **P1**：worklog-update 内部矛盾：hard deny 说「两层 config 一律不碰」而 Step 5 让自动追加顶层键，执行者无法同时服从；按 PRD §12 原意收敛为「一律只展示不代写，用户明确授权才动」
+- **P2**：PRD 树图注「CONTRIBUTING.md 在仓根」漏改（仓根收缩时遗留）；PRD §6.1 vault 内部源残留私有版「memory 目录」描述（改为与 ingest SKILL 一致的 git log + wiki / inbox 感知）；PRD §7 与 lint SKILL description 仍写「日期门 zh 才加载」（第三轮已改为 zh / en 都跑，两处口径补齐）；ingest Step A im 行残留「跑 feishu-setup 补全」硬编码（错误表第一轮已泛化、此处漏网）
+
+### Added
+- 降级路径测试三例（补「每个数据源都可失败」承诺的测试空白）：scan / discover 对未挂载 root 的 SKIP_UNMOUNTED + exit 0、github-scan 无 gh 时 exit 4
+
 ## Unreleased · CHANGELOG 合并进 AIREADME（2026-07-12）
 
 ### Changed

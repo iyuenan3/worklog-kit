@@ -5,11 +5,14 @@ CI 的 bash -n / shellcheck 只保证语法，行为回归靠本文件。
 """
 import os
 import pathlib
+import shutil
 import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCAN = ROOT / ".claude/skills/worklog-ingest/scripts/scan.sh"
 DISCOVER = ROOT / ".claude/skills/worklog-init/scripts/discover.sh"
+GHSCAN = ROOT / ".claude/skills/worklog-ingest/scripts/github-scan.sh"
+BASH = shutil.which("bash")
 
 COMMIT_DATE = "2026-07-11T12:00:00+08:00"
 SINCE = "2026-07-11T00:00:00+08:00"
@@ -83,6 +86,31 @@ def test_scan_author_filter_spaced_name(tmp_path):
     assert "COMMIT " in hit.stdout
     miss = sh(SCAN, "--since", SINCE, "--until", UNTIL, "--authors", "Nobody Else", tmp_path)
     assert "COMMIT " not in miss.stdout and "REPO " in miss.stdout
+
+
+def test_scan_unmounted_root_is_skip_not_error(tmp_path):
+    # 「每个数据源都可失败」核心承诺：root 不存在（硬盘未挂载）= 常态路径，stderr 提示 + exit 0
+    r = sh(SCAN, "--since", SINCE, "--until", UNTIL, tmp_path / "not-mounted")
+    assert r.returncode == 0
+    assert "SKIP_UNMOUNTED" in r.stderr
+    assert r.stdout.strip() == ""
+
+
+def test_discover_unmounted_root_is_skip_not_error(tmp_path):
+    r = sh(DISCOVER, tmp_path / "not-mounted")
+    assert r.returncode == 0
+    assert "SKIP_UNMOUNTED" in r.stderr
+
+
+def test_github_scan_no_gh_exit_4(tmp_path):
+    empty = tmp_path / "emptybin"
+    empty.mkdir()
+    r = subprocess.run([BASH, str(GHSCAN), "--since-utc", "2026-07-11T00:00:00Z",
+                        "--until-utc", "2026-07-11T23:59:59Z"],
+                       capture_output=True, text=True,
+                       env={"PATH": str(empty), "LC_ALL": "C"})
+    assert r.returncode == 4
+    assert "NO_GH" in r.stderr
 
 
 def test_scan_symlink_root(tmp_path):

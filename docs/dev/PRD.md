@@ -49,7 +49,7 @@ worklog-kit/                      # 仓根 = 用户 vault 模板
 ├── wiki/                         # 知识层（LLM 维护）：index.md + log.md + todos.md + projects/
 ├── inbox/                        # 素材收件箱：人放原料、AI 消化
 ├── docs/methodology.md           # project-lifecycle 方法论全文（v0.4 迁入，产品件，随模板分发）
-├── docs/dev/                     # kit 开发文档（PRD / DEV 开发路由），init 可一键移除；CONTRIBUTING.md 在仓根
+├── docs/dev/                     # kit 开发文档（PRD / DEV 开发路由），init 可一键移除；CONTRIBUTING.md 在 .github/
 └── .claude/skills/
     ├── worklog-init/             # 初始化：环境预检 + config 生成 + 三件套全局安装 + 冷启动（locale 模板随本 skill）
     ├── worklog-ingest/           # config 驱动通用版（核心工程，重写非删改）
@@ -102,7 +102,7 @@ skill 只依赖以下各项，模板全部预置，`worklog-update` 永不触碰
 | 2 | 托管平台（github / gitlab） | 一次配置 | gh / glab CLI 扫「今天我名下所有仓的 push」，设备维度收敛成平台维度；auth 失效降级为只扫本地并报一行 |
 | 3 | local-git 多 root | 便宜 | config 声明搜索根（多硬盘 = 多 root），有限深度自动发现 `.git`；未挂载即记一句跳过；排除 `refs/stash` 伪 commit |
 | 4 | remote-ssh | 贵，按需 | 仅给「工作不经过平台」的机器；参数化 `scan.sh` 本地远程同一脚本（`ssh host 'bash -s' < scan.sh`）；连通性文档推荐 Tailscale |
-| 5 | vault 内部状态 | 内置 | memory 目录 mtime + wiki / diaries 改动感知（ingest 自身状态源，不属于外部四层） |
+| 5 | vault 内部状态 | 内置 | 本仓 git log（窗口内非 ingest commit）+ wiki / inbox 改动感知（ingest 自身状态源，不属于外部四层） |
 
 IM 协调源（type: im，经连接器接入，见 §6.3）与上表并列。
 
@@ -164,7 +164,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 | worklog-import | `uvx markitdown` 转换 docx / PDF / pptx 等入 `inbox/`；图片 LLM 描述默认关；ingest 不自动扫 inbox（防耗时爆炸），只引用当天新增条目 |
 | feishu-setup | §6.3 连接器接口的首个参考实现 |
 | worklog-query | 「查 X」跨日记 + wiki 检索行为显式化 |
-| worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；中文 locale 可选项：标点门（punctuation_check.py）与日期门（date_weekday_check.py），均随包、`language: zh` 才加载；个人演化项不进 kit |
+| worklog-lint | 通用项：断链、frontmatter 完整、凭证扫描（含截断 token 前缀）；写作门随包：标点门（punctuation_check.py）仅 `language: zh` 加载，日期门（date_weekday_check.py）zh / en 都跑；个人演化项不进 kit |
 | worklog-update | 镜像同步 `.claude/skills/` 白名单路径（含三件套统一经此更新），其余 hard deny（§12）；上游地址可经 config `upstream_repo` 覆盖（fork 用户） |
 | worklog-export | 退出通道（§9.5）：wikilink 转普通链接 + 移除 Tasks 查询块与行尾元数据 emoji，产物为不依赖工具链的纯 markdown |
 

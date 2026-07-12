@@ -1,6 +1,6 @@
 ---
 name: worklog-lint
-description: vault 健康检查。用户说「检查 / lint / 体检」时触发：跑通用机械项（契约锚点 / 凭证扫描 / 断链 / frontmatter / log 轮转阈值），config language 为 zh 时追加标点门与日期门；报告 must-fix 与 advisory，经确认后可代修。
+description: vault 健康检查。用户说「检查 / lint / 体检」时触发：跑通用机械项（契约锚点 / 凭证扫描 / 断链 / frontmatter / log 轮转阈值）+ 写作门（标点门仅 language zh 跑，日期门 zh / en 都跑）；报告 must-fix 与 advisory，经确认后可代修。
 ---
 
 # worklog-lint：vault 健康检查
