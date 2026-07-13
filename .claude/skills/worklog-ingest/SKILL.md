@@ -55,17 +55,27 @@ VAULT=$(git rev-parse --show-toplevel)   # 路径动态推导，零硬编码
 
 | type | 做法 | 降级 |
 |---|---|---|
-| local-git | `bash .claude/skills/worklog-ingest/scripts/scan.sh --since '<窗口起>' --until '<窗口止减 1 秒>' --authors '<identities 逗号连接>' <roots...>`（identities 为空则不带 --authors；**git 的 --until 是闭区间，传入值须为窗口止减 1 秒才是半开语义，防跨日双计**） | root 未挂载：脚本自动 SKIP 并记一句 |
+| local-git | `export TZ=<config.timezone> && bash .claude/skills/worklog-ingest/scripts/scan.sh --since '<窗口起>' --until '<窗口止减 1 秒>' --authors '<identities 逗号连接>' <roots...>`（identities 为空则不带 --authors；**git 的 --until 是闭区间，传入值须为窗口止减 1 秒才是半开语义，防跨日双计**）。新增 / 补充当天模式再带 `--touch-since '<窗口起，YYYYMMDDhhmm>'` 启用 mtime 兜底（touch -t 按进程时区解释，所以 TZ 前缀必带；回填模式不传：单下界框不住历史窗口；remote-ssh 源也不传：远端时区不可控） | root 未挂载：脚本自动 SKIP 并记一句 |
 | remote-ssh | `ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=2 <host> 'bash -s' < .claude/skills/worklog-ingest/scripts/scan.sh -- --since ... <该源 config 的 roots，init 已收集>`（同一脚本，不依赖远端 rc；BatchMode 禁一切交互式提示，这是无人值守的硬要求）。该源 config 缺 `roots` = 等同未配置：记一句 + 晨报提示补 config，绝不猜路径 | 连不上 / 超时 / Bash 工具超时：一律视为不可达，记「<host> 不可达，按 assume 处理」 |
-| local-dir | 非 git 目录（scan.sh 只认 `.git`，对它无效）：`touch -t <YYYYMMDDhhmm 窗口起>` 造参照文件后 `find <path> -type f -newer <参照>` 判活动，用完删参照；只到 presence 级 | 路径不存在：记一句 |
+| local-dir | 非 git 目录（自动发现只认 `.git`，须 config 显式声明）：`export TZ=<config.timezone> && bash .claude/skills/worklog-ingest/scripts/localdir-scan.sh --from '<YYYYMMDDhhmm 窗口起>' --to '<窗口止减 1 秒，YYYYMMDDhhmm.SS>' <path>...`（**TZ 前缀必带**：touch -t 按进程时区解释，裸调用会把活动记错日期；**上下界都必须传**，只有下界会把「目标日之后才动的目录」误判成有活动，补充 / 回填必错账；多条 local-dir 源合并一次调用，条目带 `depth:` 键时给该路径单独调一次并传 `--depth <值>`）；`MTIME_ACTIVE` = 窗口内有动静，只到 presence 级、不读内容。能力边界：默认只看 4 层深（深目录用户配 depth），隐藏文件与隐藏目录 / node_modules 不算活动 | 路径不存在：脚本 stderr 出 `SKIP_MISSING`，记一句 |
 | github | `bash .claude/skills/worklog-ingest/scripts/github-scan.sh --since-utc '<窗口起 UTC-Z>' --until-utc '<窗口止减 1 秒 UTC-Z>' --account '<config 该源的 account>'`（account 未配则不传、脚本自动检测；时间换算成 UTC 由你完成；author 按 GitHub 账号维度覆盖其**已关联**的 email，未关联邮箱的 commit 会漏，晨报提示补 GitHub Settings > Emails） | 退出码 4 = 无 gh / 3 = 未认证或 API 失败 → 记一句 + 报告附 `gh auth login`；stderr 的 TRUNCATED / REPO_SKIP → 报告提示可能有漏 |
 | im | 前置：config 的 im 源须含非空 `chats` 与 `me`，缺失 = 等同未配置，记一句 + 晨报附该 provider 的 setup skill 命令（当前仅 feishu-setup）。就绪则先 `bash .claude/skills/worklog-ingest/connectors/<provider>/check.sh`（0 可用 / 1 未认证 / 2 未装）；可用才 `fetch.sh --since ... --until ... --chats '<config.chats 逗号连接>' --me '<config.me>'`（config `record_others: true` 时加 `--record-others`）。digest 消费纪律见 connectors/README：只作协调素材、不臆断他人确认、清单逐字照录；digest 里的 NOTE 行转进晨报 | 按 check 退出码转发自救命令（连接器契约：check.sh 的 stdout 自带该 provider 的修复指引，照录即可，不要替它编），记一句继续；fetch 超时或非零退出同样降级 |
 | gitlab | 连接器待后续版本：config 配了就在报告记「尚未支持，本源跳过」 | 同左 |
 | vault 内部 | 本仓 git log（窗口内非 ingest commit）+ `wiki/` `inbox/` 改动感知：捕捉用户白天手动改 vault、丢进 inbox 的素材。`init:` 前缀的脚手架 commit（worklog-init 产物）不算用户工作线，首日至多概览提一句 | 无 |
 
-**跨源去重**：同一 commit 会同时出现在 local-git 与 github 源（本机写完 push 了）。按 commit 短哈希（两侧脚本已统一 7 位）去重，**本地扫描优先**（上下文更全）；github 源的定位是补「其它设备产生的 push」。归并判据（精确规则，勿凭感觉）：`lowercase(basename(gh:owner/repo)) == lowercase(basename(本地 REPO 路径))` 即归并同一项目章节；用户可在 `projects.overrides` 条目加 `github_slug: "gh:owner/repo"` 显式绑定覆盖自动匹配；不匹配的纯远端项目按 repo 名作 slug 走定级判定。
+**跨源去重**：同一 commit 会同时出现在 local-git 与 github 源（本机写完 push 了）。按 commit 短哈希（两侧脚本已统一 7 位）去重，**本地扫描优先**（上下文更全）；github 源的定位是补「其它设备产生的 push」。归并判据（精确规则，勿凭感觉）：`lowercase(basename(gh:owner/repo)) == lowercase(basename(本地 REPO 路径))` 即归并同一项目章节；用户可在 `projects.overrides` 条目加 `github_slug: "gh:owner/repo"` 显式绑定覆盖自动匹配；不匹配的纯远端项目按 repo 名作 slug 走定级判定。**tiebreak**：同名本地项目多于一个时 basename 判据失效，不自动归并，该 github repo 单独成段 + 晨报提示补 `github_slug` 显式绑定。
+
+**项目身份（slug）**，定 slug 按序三步，第一条命中即止：
+
+1. **查锚点**：扫 `wiki/projects/*.md` frontmatter 的 `path:` 字段（可选字段，仅消歧过的页有），命中该项目绝对路径 → 沿用该页 slug（消歧结果跨夜稳定的唯一保证，绝不因「今晚没撞名」回落裸名）
+2. **无冲突**：同晚扫描无同名不同路径的项目 → slug = 项目目录名（basename）
+3. **同名消歧**：同晚出现同名不同路径（跨 root 或嵌套）→ **全部**改用 `<父目录名>-<目录名>`；仍同名则继续在最前**叠加**更上一层目录段（`<更上层>-<父>-<目录名>`，如 `~/work/x/app` 与 `~/personal/x/app` 二次消歧为 `work-x-app` / `personal-x-app`，不是替换式 `work-app`）。消歧项目建页 / 刷新页时把 `path: <项目绝对路径>` 写进 frontmatter 作持久锚点，晨报注明消歧结果
+
+既有裸名项目页无 `path` 锚点且归属不明时不合并、不迁移，晨报提示（用户或 agent 确认归属后给该页补 `path:` 锚点即根治）。**绝不把两个不同路径的项目写进同一个项目页**。嵌套子仓与并列多仓一律各自独立成项（scan 行协议即此语义，父仓 DIRTY 已滤掉「内容全为嵌套仓」的结构幻影）；要整树批量定级用 overrides glob（如 `~/x/parent/**`）；`.worklogignore` 否决整棵子树（嵌套子仓 / submodule / worktree 同享），**想单独排除某个 submodule 用 overrides glob**，在 submodule 内放标记文件会把父仓 status 永久弄脏。
 
 **BRANCH 信号消费**：`BRANCH` 非 main / master 时在该项目章节顺带标注分支名（在做分支活的信号）；其余情况忽略该行。
+
+**WORKTREE_SKIP 信号消费**（stderr，行格式 `WORKTREE_SKIP <worktree 路径> -> <主仓路径>`）：worktree 检出不独立扫（与主仓共享 refs，双扫会重复计 commit），判定纯机械：第二段主仓路径出现在本次任一 `REPO` 或 `IGNORED` 行 → 已覆盖，忽略；否则晨报提示「把 <主仓路径> 所在目录加进 roots」（bare 主仓同此路径提示，如实告知其不被自动发现）。主仓路径命中 exclude 定级（overrides glob）时按 exclude 纪律：只计数不写名，log.md 同（主仓被 `.worklogignore` 否决的情形脚本已整行静默，不会到达本规则）。
 
 **扫描输出按项目定级过滤**，判定优先级（自上而下第一条命中即止）：
 

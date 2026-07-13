@@ -18,7 +18,7 @@ sources:
   # - {type: github, account: your-name, assume: active}
   # - {type: remote-ssh, host: workbox, roots: ["~/projects"], assume: active, on_unreachable: note}   # roots = project parent dirs on the remote machine (required by scan.sh)
   # - {type: im, provider: feishu, via: lark-cli, chats: ["oc_xxx"], me: "<open_id or name>", on_unreachable: note, record_others: false}   # set up via feishu-setup
-  # - {type: local-dir, path: ~/writing/notes, track: mtime}    # non-git projects must be declared explicitly
+  # - {type: local-dir, path: ~/writing/notes, track: mtime, depth: 4}    # non-git projects must be declared explicitly; depth optional (activity scan depth, default 4, raise for deep trees)
 
 projects:
   default_level: detail        # level used when an overrides entry omits `level` (detail / summary / presence / exclude)

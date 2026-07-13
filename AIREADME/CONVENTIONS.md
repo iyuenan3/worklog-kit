@@ -11,10 +11,11 @@
     last_updated: YYYY-MM-DD
     source_count: N          # 提及本项目的日记数（复利指标）
     diaries: ["[[YYYY-MM-DD]]", ...]
+    path: /abs/path          # 可选：slug 消歧锚点（同名项目并存时由 ingest 写入，跨夜稳定身份）
     ---
 
 ## 项目记录级别（config projects）
-detail（详记 + 建项目页）/ summary（一句概要）/ presence（只记存在与计数）/ exclude（不出现）；项目根放 `.worklogignore` = 永久 exclude。
+detail（详记 + 建项目页）/ summary（一句概要）/ presence（只记存在与计数）/ exclude（不出现）；项目根或任一祖先目录放 `.worklogignore` = 永久 exclude（否决整棵子树，嵌套子仓 / submodule / worktree 同享）。
 
 ## 写作
 - 语言按 config `language`；zh 启用中文标点一致性检查（标点门）

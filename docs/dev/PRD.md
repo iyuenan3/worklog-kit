@@ -1,6 +1,6 @@
 # PRD · worklog-kit
 
-> 立项：2026-07-11（周六）｜状态：v0.6，M1 至 M4 与 M6（vault 记忆维护）已完成；2026-07-12 已提前翻 public + 开 template（见修订记录 v0.5），M5 余项（种子用户试用与实测）进行中
+> 立项：2026-07-11（周六）｜状态：v0.7，M1 至 M4 与 M6（vault 记忆维护）已完成；2026-07-12 已提前翻 public + 开 template（见修订记录 v0.5），M5 余项（种子用户试用与实测）进行中
 > 本文档是产品需求 + 工程规格的单一真相源，由四轮孵化讨论 + 一轮 112 条多视角设计审计（4 路并行审计 97 条 + 完整性补漏 15 条）收敛而来，调优阶段直接修订本文档。修订记录见文末。
 
 ---
@@ -101,7 +101,7 @@ skill 只依赖以下各项，模板全部预置，`worklog-update` 永不触碰
 |---|---|---|---|
 | 1 | brain-dump | 零配置 | 触发消息即最后的万能收集器，不用声明 |
 | 2 | 托管平台（github / gitlab） | 一次配置 | gh / glab CLI 扫「今天我名下所有仓的 push」，设备维度收敛成平台维度；auth 失效降级为只扫本地并报一行 |
-| 3 | local-git 多 root | 便宜 | config 声明搜索根（多硬盘 = 多 root），有限深度自动发现 `.git`；未挂载即记一句跳过；排除 `refs/stash` 伪 commit |
+| 3 | local-git 多 root | 便宜 | config 声明搜索根（多硬盘 = 多 root），有限深度自动发现 `.git`（目录与 gitdir 指针文件两种形态，submodule 一等支持；worktree / bare 边界见 §6.4）；未挂载即记一句跳过；排除 `refs/stash` 伪 commit |
 | 4 | remote-ssh | 贵，按需 | 仅给「工作不经过平台」的机器；参数化 `scan.sh` 本地远程同一脚本（`ssh host 'bash -s' < scan.sh`）；连通性文档推荐 Tailscale |
 | 5 | vault 内部状态 | 内置 | 本仓 git log（窗口内非 ingest commit）+ wiki / inbox 改动感知（ingest 自身状态源，不属于外部四层） |
 
@@ -154,9 +154,10 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - **四级记录级别**（per 项目）：`detail`（详记：commit 内容、决策、建 wiki 项目页）/ `summary`（一句概要 + 计数，不建项目页）/ `presence`（只记存在与 commit 数，不读内容）/ `exclude`（完全不记，日记不出现）
 - **init 扫描预览**：初始化跑一遍全量发现，把找到的项目清单摆给用户逐个定级；这一步同时帮用户看清「原来这些也会被扫到」，是同意机制的第一道闸
 - **新项目安全默认**：日常 ingest 自动发现的新项目，初始级别 = `presence`（当晚只记「新发现项目 X：N commits，待定级」，不读内容），晨起报告列「待定级」清单，用户一句话升降级；接受全自动详记的用户可 config `on_new_project: detail`
-- **项目侧否决权**：项目根放 `.worklogignore` 标记文件 = 永久 `exclude`，跟随项目移动、优先级高于 config
-- **非 git 项目**：自动发现只认 `.git`（其余目录噪音太大）；无 git 的项目（文档 / 设计 / 写作类）经 config `local-dir` 显式声明，按 mtime 追踪（v0.1 仅 presence 级，详记后置）
-- **项目身份**：slug = 目录名；跨 root 同名冲突自动加 root 别名前缀；嵌套子仓默认归并父项目页，config 可拆分
+- **项目侧否决权**：项目根**或任一祖先目录**放 `.worklogignore` 标记文件 = 永久 `exclude`，否决整棵子树（嵌套子仓 / submodule / worktree 独立成项后仍被树顶一个标记罩住，v0.7），跟随项目移动、优先级高于 config；想单独排除某个 submodule 用 overrides glob（在 submodule 内放标记文件会把父仓 status 永久弄脏）
+- **非 git 项目**：自动发现只认 `.git`（其余目录噪音太大）；无 git 的项目（文档 / 设计 / 写作类）经 config `local-dir` 显式声明，由 `localdir-scan.sh` 按 mtime 判活动（v0.7 由 SKILL 内联配方下沉成脚本：窗口上下双界防「目标日之后动过 = 回填每天都有活动」的错账、隐藏目录 / node_modules / 隐藏文件噪音防护、深度上限默认 4 层且条目可配 `depth:` 键、字面 `~` 展开；调用须先 `export TZ=<config.timezone>`，touch -t 按进程时区解释）；v0.1 仅 presence 级，详记后置
+- **项目身份**：slug = 目录名，定名先查 wiki 项目页 frontmatter 的可选 `path:` 锚点（消歧结果的持久化通道，防同一项目跨夜在裸名与消歧名之间摇摆出双页）；同名不同路径冲突时全部加父目录名前缀消歧，仍同名则**叠加**更上层目录段（`work-x-app` 式，非替换式），消歧当晚把 `path:` 写进项目页锚定，绝不把两个不同路径的项目写进同一个项目页；同名冲突使 github 跨源归并的 basename 判据失效时不自动归并，晨报提示补 `github_slug` 显式绑定
+- **多仓形态**（v0.7 实态修正，原「嵌套子仓默认归并父项目页」从未实现且与 scan 行协议相反，改口认账实现语义）：嵌套子仓与并列多仓一律各自独立成项，整树批量定级用 overrides glob，「多仓归组为一个项目页」列 §16 后置；父仓 DIRTY 不计「内容全为嵌套仓」的未追踪目录（结构幻影，防 presence 级父仓永久带假信号；status 用 `-z` 解析，空格 / 中文目录名同样生效），MTIME 兜底同样不受嵌套仓 / 隐藏文件串扰；submodule（`.git` 为 gitdir 指针文件）同等独立发现与扫描；worktree 判定语义化（git-dir ≠ git-common-dir，路径子串匹配会误伤 separate-git-dir 与 worktree 内 submodule 这类独立对象库）、不独立扫（与主仓共享 refs，双扫必重复计 commit）、信号 `WORKTREE_SKIP <worktree> -> <主仓>` 自带主仓路径供 ingest 机械比对（主仓被否决时整行静默防路径泄漏）；bare 仓不被自动发现（明确边界，见 §14）
 
 ## 7. Skill 需求要点
 
@@ -240,6 +241,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - aireadme STANDARD.md 全文英文化（上游事项，后置）
 - 全仓深度 review 方法论产品化（开发工序、token 成本高，用户 vault 不需要；`docs/dev/deep-review.md` 留方法论占位）
 - worklog-maintain 触碰 `~/.claude` memory（git 之外不可回滚，v1 只给 `docs/maintenance.md` 手工瘦身配方）
+- worktree 独立扫描与 bare 仓自动发现（worktree 与主仓共享 refs，独立扫必重复计 commit，已改为 `WORKTREE_SKIP` 信号 + 主仓不在 roots 时晨报提示；bare 仓目录名不可枚举、无 `.git` 锚点，需要采集时把普通检出放进 roots）
 
 ## 15. 里程碑
 
@@ -255,6 +257,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - pilot 人选：一位朋友已提前进场（2026-07-12 起），其余人选待定
 - skill 指令面目前 zh 单语（模板与产出语言已按 config `language` 分流，en 用户执行正确性依赖模型双语能力）：是否翻译 SKILL 全集待 pilot 反馈定；`docs/`（methodology / maintenance）同为 zh 单语且无 en locale 模板，翻译与 SKILL 同批决策（init Step 4 已如实告知 en 用户）
 - 第二个 IM 连接器（slack / 企业微信）的时机与归属（维护者 or 社区）
+- 多仓归组：用户视角「一个项目 = 多个仓」（如 proj/frontend + proj/backend）目前各自成项目页（§6.4 多仓形态），是否提供 overrides 级归组（多个本地 REPO 并进一个项目页）待真实需求出现再设计
 
 ## 17. 依赖与许可
 
@@ -286,6 +289,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 
 ## 修订记录
 
+- **v0.7（2026-07-13）多 git 仓与非 git 项目实态修正**：源于「一个项目下多个 git 仓 / 非 git 项目怎么处理」两问的端到端审计（4 facet fixture 实跑 + 每条发现 3 视角对抗验证，12 确认 / 9 驳倒）。① §6.4「嵌套子仓默认归并父项目页」从未实现且与 scan.sh 行协议注释正相反，改口认账「嵌套与并列多仓一律各自独立成项」（新增「多仓形态」bullet），配套修父仓 DIRTY 结构幻影（「内容全为嵌套仓」的未追踪目录不计）与 MTIME 兜底串扰（嵌套仓 / 隐藏文件 / node_modules 不算活动）；②「跨 root 同名冲突自动加 root 别名前缀」原为零实现，落地为 ingest 的 slug 消歧规则（父目录名前缀 + 绝不同页混写 + github 归并 tiebreak）；③ submodule 原为发现与扫描双盲区（`.git` 指针文件不匹配 `-type d`，内部 commit 整天消失），升为一等支持；worktree 检出改出 `WORKTREE_SKIP` 信号（独立扫会因共享 refs 重复计 commit），bare 仓明确为不支持边界（§14）；④ local-dir 由 SKILL 两行内联配方下沉为 `localdir-scan.sh`：窗口上下双界（修「回填 N 天必错账」的 P1）+ 噪音防护 + 深度上限 + `~` 展开 + 参照文件进 TMPDIR，补 8 例 pytest；⑤「多仓归组」列 §16 开放问题；⑥ 对本轮 diff 的 6 维对抗验证轮（96 agent，30 条原始收敛 23 条确认全处置、7 条驳倒）：worktree 判据语义化（git-dir ≠ git-common-dir，修路径子串误伤独立对象库的 commit 静默丢失）、`WORKTREE_SKIP` 信号自带主仓路径（修「判断主仓是否在 roots 内」不可执行）、DIRTY 改 `-z` 解析（修空格 / 中文嵌套仓幻影残留）与 symlink 视同真实内容、`.worklogignore` 升级为子树否决（修 worktree / submodule 绕过否决权的路径泄漏）、slug 消歧结果持久化进项目页 `path:` 锚点（修跨夜摇摆出双页）+ 叠加式上溯写死、local-dir 调用焊 TZ 前缀（修沙箱时区致记账平移的 P1）+ config `depth:` 键接线、三脚本 depth 参数前置校验、scan.sh `--touch-since` 接进 ingest 当天模式。§6.1 / §6.4 / §14 / §16 与 ingest / init SKILL、CONVENTIONS 双 locale、config 双 locale、README 双语同步。
 - **v0.6（2026-07-12）vault 记忆维护设计定稿**：新增 §18（主 session 以「v0.5 新功能」立项交办）：lint 健康节（--health 五项指标 + config maintenance 阈值段）、ingest 体检提醒行、worklog-maintain skill（检查与修复分离、授权跟触发方式走、三红线）、文档三小件。§7 / §4.1 / §14 / §15 同步。
 - **v0.5（2026-07-12）提前公开**：应种子用户直接从 GitHub 取用的需求，提前翻 public + 开 template，未走完原定 dogfood → pilot → 审计顺序。翻 public 前过泄漏飞检：全仓 `LC_ALL=C` 红线词扫描仅命中 LICENSE 公开署名（保留）；commit message 干净；git author email 与已公开 personal-skills 一致，不构成新增泄漏，M5「git 历史 Author email 处理」项消解。由此红线升级：本仓内容从「默认将来公开」变为「即时公开」（每次 push 前自查 diff 与 commit message）；禁止随意改写已 push 历史（外部用户可能已 clone，force push 前先评估影响）。§15 M5、§16 发布时机与 DEV.md 红线同步。
 - **v0.4（2026-07-11）工作流 skill canonical 迁入**：三件套（aireadme / stash / pitfalls）与 project-lifecycle.md 的 canonical 维护地从 personal-skills 迁入本仓（§4.2 三步演化至终态），跨仓 sync 机制整体取消；personal-skills 留目录 stub + 顶层指针表，story-writer 留守，worklog-ingest 公开骨架废弃为指针；GitHub 私仓即刻建立，M5 审计后翻 public。

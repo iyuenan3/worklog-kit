@@ -11,10 +11,11 @@
     last_updated: YYYY-MM-DD
     source_count: N          # number of diaries mentioning this project (compounding metric)
     diaries: ["[[YYYY-MM-DD]]", ...]
+    path: /abs/path          # optional: slug disambiguation anchor (written by ingest when same-named projects coexist; stable identity across nights)
     ---
 
 ## Project recording levels (config projects)
-detail (full record + project page) / summary (one line) / presence (existence + count only) / exclude (absent); an empty `.worklogignore` in a project root = permanent exclude.
+detail (full record + project page) / summary (one line) / presence (existence + count only) / exclude (absent); an empty `.worklogignore` in a project root or any ancestor directory = permanent exclude (vetoes the whole subtree; nested repos, submodules, and worktrees included).
 
 ## Writing
 - Language per config `language`; zh enables the Chinese punctuation consistency gate

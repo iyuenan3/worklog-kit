@@ -18,7 +18,7 @@ sources:
   # - {type: github, account: your-name, assume: active}
   # - {type: remote-ssh, host: workbox, roots: ["~/projects"], assume: active, on_unreachable: note}   # roots = 远端机上的项目父目录（scan.sh 必需）
   # - {type: im, provider: feishu, via: lark-cli, chats: ["oc_xxx"], me: "<open_id 或姓名>", on_unreachable: note, record_others: false}   # 接入走 feishu-setup
-  # - {type: local-dir, path: ~/writing/notes, track: mtime}    # 非 git 项目须显式声明
+  # - {type: local-dir, path: ~/writing/notes, track: mtime, depth: 4}    # 非 git 项目须显式声明；depth 可选（活动感知层深，默认 4，深目录调大）
 
 projects:
   default_level: detail        # overrides 条目未显式给 level 时用此级别（detail / summary / presence / exclude）

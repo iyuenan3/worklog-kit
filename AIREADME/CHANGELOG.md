@@ -2,6 +2,32 @@
 
 > 倒序版本块，每块 = 版本 + 日期 + `Added/Changed/Fixed/Removed`，格式参考 [Keep a Changelog](https://keepachangelog.com/)。**单一版本流**：以下先是 worklog-kit 的发布史（你的 vault 诞生自哪个版本），init 之后 vault 自己的里程碑（初始化、schema 大改、数据源增减、skill 升级）继续在顶部叠加。
 
+## Unreleased · 多 git 仓与非 git 项目实态修正（PRD v0.7，2026-07-13）
+
+源于「一个项目下多个 git 仓 / 非 git 项目怎么处理」两问的端到端审计（4 facet fixture 实跑 + 每条发现 3 视角对抗验证，21 条原始 → 12 确认全处置、9 驳倒）：
+
+### Fixed
+- **P1**：local-dir 活动判定无窗口上界（SKILL 内联配方只造「窗口起」参照，目录在目标日之后动过就把每个历史日记成有活动，「补充昨天 / 回填 N 天」必错账）：下沉为 `localdir-scan.sh`，双参照定窗 `find -newer 起 ! -newer 止`
+- **P2**：submodule 是发现与扫描双盲区（`.git` 为 gitdir 指针文件，`-type d` 永不匹配，submodule 内 commit 主仓 log 不含、自身又不被发现，整天工作从日记消失）：find 增配 `-type f -name .git`，指针分类后按独立仓照常扫，fixture 实测内部 commit 完整捕获；worktree 检出出 `WORKTREE_SKIP` 信号不独立扫（共享 refs 双扫会重复计 commit），bare 仓明确为不支持边界（PRD §14 + README 双语 Troubleshooting）
+- **P2**：local-dir 零噪音防护（.DS_Store / node_modules / 隐藏目录 / 无限深度全算活动，Finder 浏览一次即假活动）：隐藏目录 / node_modules 与 scan.sh / discover.sh 同口径 prune + 深度默认 4（config `depth:` 键可调）+ 隐藏文件不算活动；scan.sh 自身 MTIME 兜底同步修嵌套仓与隐藏文件串扰（嵌套仓 prune 为 scan.sh 特有：子仓已独立成段，活动各归各）
+- **P2**：PRD §6.4 两句失实承诺处置：「嵌套子仓默认归并父项目页」零实现且与 scan 行协议相反 → 改口认账「嵌套与并列多仓一律各自独立成项」（多仓归组列 §16 开放问题）；「跨 root 同名加 root 别名前缀」零实现 → 落地为 ingest slug 消歧规则（同名全部加父目录名前缀 + 绝不两项目共写一页 + github 归并 basename 判据失效时不自动归并、晨报提示补 `github_slug`）
+- **P3**：嵌套子仓使干净父仓 DIRTY 恒 ≥1（`?? sub/` 结构幻影，presence 级父仓永远到不了「无信号可省略」）：DIRTY 统计跳过「内容全为嵌套仓」的未追踪目录，真实未追踪文件照常计；config 字面 `~` 路径在 local-dir 曾被误报「路径不存在」：脚本兜底展开（与 scan.sh 同）；参照文件明确进 TMPDIR（防落 vault 弄脏 git status）
+
+### Added
+- `localdir-scan.sh`（local-dir 源首个脚本承载）+ `tests/test_localdir_scan.py`（窗口上下界 / 噪音 / 深度 / 缺路径 / `~` 展开 / 非法参数 / 多 path / TMPDIR 故障区分）
+- tests/test_scan_discover.py 新增：嵌套幻影过滤与真 untracked 保留、submodule E2E（真 `submodule add`）、worktree 跳过不重复计、separate-git-dir、MTIME 串扰回归等
+- ingest SKILL「项目身份（slug）」与「WORKTREE_SKIP 信号消费」两节；init Step 5 清单口径（git 形态边界如实告知）
+
+### Fixed（本轮 6 维对抗验证轮：96 agent、30 条原始收敛 23 条确认全处置、7 条驳倒）
+- **P1**：ingest 的 local-dir 调用模板缺 TZ 约束（Claude Code 沙箱注入太平洋时区，touch -t 按进程时区解释，照字面执行活动整体平移约 15 小时记错日）：local-dir 与 local-git 调用行焊死 `export TZ=<config.timezone> &&` 前缀，脚本头注补警示
+- **P2**：worktree 判据 `gitdir:*/worktrees/*` 路径子串匹配误伤独立对象库（`--separate-git-dir` 到名含 worktrees 的目录、worktree 内 submodule，commit 静默丢失）：改语义判定 git-dir ≠ git-common-dir ⇔ linked worktree，六种 .git 形态 fixture 实测零误判
+- **P2**：DIRTY 嵌套仓幻影过滤对空格 / 中文目录名失效（porcelain 引号转义致模式不匹配，原「保守分支」实为不可达死代码）：改 `--porcelain -z` 解析（rename / copy 双段记录多吞一段防双计）；幻影判据从「无普通文件」放宽为「无任何非目录条目」（symlink 是 git 一等追踪对象，只含 symlink 的未追踪目录算真实内容）
+- **P2**：`WORKTREE_SKIP` 信号只有 worktree 路径，SKILL 承诺的「判断主仓是否有对应 REPO 块」不可执行（remote-ssh 源彻底走不通）：信号改为 `WORKTREE_SKIP <worktree> -> <主仓路径>`（自 git-common-dir 推导），消费规则改纯机械比对
+- **P2**：worktree / submodule 绕过 `.worklogignore` 否决权（exclude 项目的 worktree 路径泄进晨报；exclude 树下 submodule 以全量 commit 浮出）：否决权升级为子树否决（`is_ignored` 祖先逐级检查，两脚本同一纪律），主仓被否决的 worktree 整行静默
+- **P2**：slug 消歧「同晚」瞬时判定无持久化，同一项目跨夜在裸名与消歧名间摇摆必出实体分裂双页：消歧结果写进项目页 frontmatter 可选 `path:` 锚点（CONVENTIONS 双 locale 同步），定 slug 改为「查锚点 → 无冲突 basename → 消歧」三步；上溯格式写死叠加式（`work-x-app`，非替换式）
+- **P2**：local-dir 深度默认 4 在生产调用面零暴露（深目录活动静默漏记且无调整通道）：config 条目加可选 `depth:` 键（zh / en 模板同步）、SKILL 调用行透传 `--depth`、init 问答提示深目录配 depth，能力边界（4 层 / 隐藏文件不算活动）写进 SKILL；**存量用户注意**：按 客户/年/项目 深层组织的 local-dir 目录升级后需配 depth，否则深层活动记为无
+- **P3**：三脚本 `--depth` / `WORKLOG_DISCOVER_DEPTH` 非数字时静默零输出（与「真没活动」不可区分）：前置校验 exit 2；localdir-scan 区分「TMPDIR 不可写」与「时间格式错」两种故障报错；scan.sh 的 `--touch-since` 原在生产调用链无人传参（MTIME_ACTIVE 永不触发却被 presence 判据消费）：接进 ingest 当天模式（回填与 remote-ssh 不传，注明理由）；scan.sh 噪音注释「与 localdir 同口径」收窄为实际共享的部分
+
 ## Unreleased · 第六轮 review 修复（全仓深度审查，2026-07-12）
 
 8 维全仓深审（全链路排演 / 脚本实跑 / 跨文档一致 / 长期规模 / 威胁建模二轮 / 双语 locale / 测试空洞 / 写作形象），40 条原始 → 30 去重 → 3 视角对抗验证，8 条确认全处置、22 条驳倒：

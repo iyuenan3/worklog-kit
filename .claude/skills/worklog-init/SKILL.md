@@ -53,7 +53,7 @@ gh api "repos/{owner}/{repo}" --jq .visibility   # owner/repo 从 git remote 解
    - 有 GitHub / GitLab 账号且工作会 push 上去吗？→ `github` / `gitlab` 源（gitlab 连接器尚未实现：config 会保留，ingest 暂跳过并记一句，如实告知）
    - 有「工作不经过托管平台」的远程机器吗？→ `remote-ssh`（提示连通性文档，推荐 Tailscale）；**必追问「那台机器上项目都在哪些目录」写进该源 `roots`**（ingest 要把 scan.sh 发到远端跑，没有 roots 无从扫起）
    - 用飞书等 IM 协调工作吗？→ `im` 源（提示：需另跑 feishu-setup 完成认证；默认只记你自己发的消息）
-   - 有不用 git 的项目目录（写作 / 设计）吗？→ `local-dir` 显式声明
+   - 有不用 git 的项目目录（写作 / 设计）吗？→ `local-dir` 显式声明（活动感知默认只看 4 层深，按 客户/年/项目 组织的深目录建议给该条目配 `depth:` 键）
 
 写入时附加 `initialized_at: <ISO8601 时间戳>`（重跑判据）。`language: en` 时以 `.claude/skills/worklog-init/templates/locale/en/worklog.config.yaml` 为底生成（英文注释 + 英文 `diary_title_template`），再填入上面收集的值。
 
@@ -69,6 +69,7 @@ bash .claude/skills/worklog-init/scripts/discover.sh <roots...>
 ```
 
 - 把发现的项目列成表（含 IGNORED 项与未挂载 root），向用户逐个或按目录批量定级：`detail` / `summary` / `presence` / `exclude`。
+- **清单口径**（git 形态边界，如实告知）：嵌套子仓与 submodule 各自独立成项（从路径前缀可看出父子关系，同一棵树可用一条 glob 批量定级；`.worklogignore` 否决整棵子树）；worktree 检出不独立成项（stderr 行格式 `WORKTREE_SKIP <worktree> -> <主仓>`，commit 经主仓捕获；第二段主仓路径不在预览清单里则提示补 root）；bare 仓布局暂不支持自动采集，如实告知用户。
 - **定级前先展示各级别实际抓取的数据维度**（用户不看这张表就选 detail 等于不知情同意）：
 
 | 级别 | 会记录什么 |

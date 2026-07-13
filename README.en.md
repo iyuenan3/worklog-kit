@@ -22,7 +22,7 @@ Day-to-day use is a few sentences to Claude:
 | "upgrade skills" | Updates from upstream by release tag, never touches your data |
 | "export" | Everything out as toolchain-free plain markdown |
 
-Where is "everywhere your work happens"? Local multi-root and multi-disk, GitHub, remote machines, IM coordination (GitLab planned), plus that bedtime brain-dump as the catch-all. Any source failing overnight degrades to one line in the morning report; nothing ever blocks waiting for you.
+Where is "everywhere your work happens"? Local multi-root and multi-disk (nested repos, sibling repos, and submodules each count as their own project), GitHub, remote machines, IM coordination (GitLab planned), plus non-git writing / design folders you declare explicitly (presence only, contents never read), and that bedtime brain-dump as the catch-all. Any source failing overnight degrades to one line in the morning report; nothing ever blocks waiting for you.
 
 ## Quick start
 
@@ -84,6 +84,7 @@ If you coordinate work over an IM, say "set up Feishu" at any time: the wizard w
 
 - **Permission prompts on first run**: Claude Code loads the `.claude/settings.json` allowlist in this repo; most commands should not prompt. If one does, it is not on the list; choose "always allow" or add the pattern to `permissions.allow`
 - **A source failed overnight**: that is a designed-for path, not an outage. The morning report and `.ingest-status.md` state the reason and the fix command; ingest never blocks waiting for you
+- **Worktree / bare repo layouts**: worktree checkouts are not scanned separately (their commits are captured through the main repo; the morning report tells you when the main repo sits outside your scanned roots); bare repos are not auto-discovered, so keep a regular checkout inside a scanned root
 - **How much quota does a night cost**: a typical setup (a dozen projects) is comparable to one short interactive coding session; heavy setups (100+ repos, several IM chats) scale proportionally. If you hit your subscription rate limit mid-run, the run stops, finished parts are already committed, the lock file goes stale after 2 hours, and saying "append yesterday" the next day picks things up
 
 ## License
