@@ -14,6 +14,14 @@ sources（config 声明：本机多 root / 托管平台 / 远程机 / IM / brain
 
 `inbox/` ← 人放原料（worklog-import 转 markdown）→ ingest 引用当天新增，消化进 wiki 后可归档。
 
+## 本机项目采集：多仓与非 git 形态
+
+- **采集脚本**：git 仓走 `scan.sh`（发现 + 当日活动），init 预览走 `discover.sh`；非 git 目录走 `localdir-scan.sh`（按 mtime 判有无动静，只到 presence 级）。三者共享发现与降噪纪律。
+- **项目单元 = 每个 `.git`**：嵌套子仓、submodule、并列多仓一律各自独立成项、各建各的 wiki 项目页（不归并父页，理由见 DECISIONS D1）。整棵树当一个项目看用 `projects.overrides` glob 批量定级。
+- **git 形态边界**：submodule（`.git` 为指针文件）一等支持；worktree 检出不独立扫（与主仓共享 refs，双扫会重复计），采集时出 `WORKTREE_SKIP <worktree> -> <主仓>` 信号；bare 仓不被自动发现。
+- **同名消歧**：跨 root 同名项目靠项目页 frontmatter 的 `path:` 锚点获得跨夜稳定身份（DECISIONS D2）。
+- **否决范围**：`.worklogignore` 否决整棵子树（项目根或任一祖先目录），嵌套仓 / submodule / worktree 同享。
+
 ## 禁改项
 - `wiki/index.md` 三段标题、`wiki/log.md` 锚点注释、`wiki/todos.md` 分区标题（ingest 写入锚点；改了会触发 append 兜底并在晨报警告）
 - `worklog.config.yaml` 的 `schema_version` 由 worklog-update 管理，不手改
