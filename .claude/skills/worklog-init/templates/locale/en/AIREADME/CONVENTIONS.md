@@ -19,4 +19,11 @@ detail (full record + project page) / summary (one line) / presence (existence +
 
 ## Writing
 - Language per config `language`; zh enables the Chinese punctuation consistency gate
-- Todos use Obsidian Tasks syntax in the sections of `wiki/todos.md` (valid outside Obsidian too, see that file's header note)
+
+## Todo system (Obsidian Tasks syntax; degrades gracefully to plain text outside Obsidian)
+- Syntax: `- [ ] description #todo/<type> [[related page]] 📅 YYYY-MM-DD`; done `- [x] … ✅ YYYY-MM-DD`, dropped `- [x] ~~description~~ ❌ <reason> YYYY-MM-DD` (both done and dropped close the box to `- [x]` so the aggregate query's `not done` excludes them). Every real todo carries a `#todo/<type>` tag.
+- Primary store: cross-project / meta todos live in the central `wiki/todos.md` under `## In progress` / `## Backlog`; you may evolve this (e.g. keep project-specific todos on a project page), where completed items stay in place as decision-log context rather than being moved.
+- Archive on completion: each ingest sweeps items just marked ✅ / ❌ in the central `wiki/todos.md` into the trailing `## 📦 Done archive` section (one-line conclusion + date), so the primary store only ever holds active items; the sweep touches the central todos.md only.
+- View never materialized: "what's on my plate right now" is a Claude session output (the ingest wrap-up list, and "list my todos" on demand), not a fixed section in todos.md. The file is storage only (primary-store sections + `## 📦` archive + an optional Obsidian aggregation query); ask Claude for the board. This is why non-Obsidian setups need no dead query text.
+- Inventory digs for evidence: do not judge a todo's state from its checkbox text alone; first read the related project's git log and project memory to verify progress, and cite evidence when marking something done (see ingest D.3 and maintain).
+- Aggregation-query pitfall: an Obsidian Tasks aggregation query must carry `tags include #todo` (only items with a `#todo` tag), plus `tags do not include #todo/stale` and `path does not include diaries/`. Filtering by path / stale alone pulls every stray `- [ ]` (migration playbooks, archived files, `- [ ]` examples in docs) into the board; non-todo checkboxes have no tag and are excluded automatically. Put one field per `sort by` line.

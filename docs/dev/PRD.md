@@ -83,7 +83,7 @@ skill 只依赖以下各项，模板全部预置，`worklog-update` 永不触碰
 2. wiki 骨架四件（ingest 硬依赖，缺一首晚即失败）：
    - `wiki/index.md`：预置头部「最后更新」段 + 项目表 + 日记表的空表格结构（含头部摘要封顶规则，默认保留最近 3 天，可配）
    - `wiki/log.md`：append-only 操作日志（按年轮转防 Read 截断，`log-YYYY.md`）
-   - `wiki/todos.md`：TODO 主存储（Obsidian Tasks 语法，非 Obsidian 环境优雅降级为普通 markdown）
+   - `wiki/todos.md`：TODO 主存储 + 末尾 `## 📦 已完成归档` 段（Obsidian Tasks 语法，非 Obsidian 环境优雅降级为普通 markdown；聚合 query 正向收口 `tags include #todo`，看板视图不物化、由 ingest 收尾清单与「列出待办」现算现给，见 §8）
    - `wiki/projects/`：项目页目录；项目页 frontmatter schema（`last_updated` / `source_count` / `diaries[]`）入契约
 3. `inbox/` 目录存在
 4. `worklog.config.yaml`：schema 含 `schema_version` 字段（升级迁移依据）
@@ -182,7 +182,7 @@ v0.1 内置 **feishu** 参考实现（官方 `@larksuite/cli`，`feishu-setup` s
 - 四模式防覆盖（新增 / 补充 / 更新 / 回填 + 触发语与文件实测共同决定 + auto-fallback）
 - 无人值守铁律 + 默认值表机制（表内容由 config 生成）
 - judgment 提炼、四元素、(B) 类自维护工作记录（四类简化为两类）
-- index 头部封顶、项目页 frontmatter 刷新、TODO 盘点
+- index 头部封顶、项目页 frontmatter 刷新、TODO 盘点（读 git log 与记忆判 4 态 + 标完成列证据 + 完成即归档到 `## 📦` + 收尾未完成清单作会话输出、视图永不物化）
 - commit + push 闭环（push 前 visibility 检测，见 §9.2）
 
 **删除（维护者专属，不迁移）**：身份锁死声明、具名远程源整块逻辑、IM 群坐标与角色专属子层、求职模块、私有 memory 引用（20+ 处）、公开镜像脱敏 SOP 节、个人项目特例路由。

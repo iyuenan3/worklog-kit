@@ -146,7 +146,7 @@ frontmatter: date / day(周X 或 weekday) / projects[](= 正文提及的项目 s
 
 ### D.2 刷新 wiki（锚点写入，找不到锚点 → append 文件尾 + status 记一行，绝不报错中断）
 
-> 锚点名跟随 config `language` 的 locale 模板：zh「## 最后更新 / ## 项目 / ## 日记」与「## 进行中 / ## 待办」，en 对应 "## Latest / ## Projects / ## Diaries" 与 "## In progress / ## Backlog"；`ingest:log-anchor` 注释跨 locale 不变。先按 config 语言找，找不到再试另一 locale（用户可能换过语言），都没有才走 append 兜底。
+> 锚点名跟随 config `language` 的 locale 模板：zh「## 最后更新 / ## 项目 / ## 日记」与「## 进行中 / ## 待办 / ## 📦 已完成归档」，en 对应 "## Latest / ## Projects / ## Diaries" 与 "## In progress / ## Backlog / ## 📦 Done archive"（`## 📦` 归档段 emoji 前缀跨 locale 不变）；`ingest:log-anchor` 注释跨 locale 不变。先按 config 语言找，找不到再试另一 locale（用户可能换过语言），都没有才走 append 兜底。
 
 1. `wiki/index.md`：「最后更新」段追加当日一句摘要（格式 zh `- **<M/D>（<周X>）**：摘要` / en `- **<Mon DD> (<Weekday>)**: summary`；只保留最近 `index_recent_days` 天，更早的删掉）；项目表刷新 / 新增 detail 级项目行；日记表**表头行下方（数据行最前）**插入 `[[<D>]]` 行 + 主线
 2. `wiki/log.md`：锚点注释下方插一段 `## [<D>] ingest`（模式 / 扫了几源 / 几项目 / 跳过什么；**exclude 级只写计数不写名**，log.md 是 git 追踪文件，写名字等于把用户要藏的项目泄漏进历史）。**年轮转**：发现 log.md 超过约 1500 行时，`git mv wiki/log.md wiki/log-<最早条目年份>.md`（归档件为只读、不再含锚点），按模板重建带锚点的空 log.md，status 记一句
@@ -154,7 +154,18 @@ frontmatter: date / day(周X 或 weekday) / projects[](= 正文提及的项目 s
 
 ### D.3 TODO 盘点 `wiki/todos.md`
 
-读全部 open TODO 对照今日扫描与 brain-dump：完成的打勾 + 完成日期；新产生的登记（Obsidian Tasks 语法 + `#todo/<类型>` + 关联页）；显著停滞的加一句标注（不主动删除，fade out 是用户的决定）。
+**判 TODO 状态前先挖硬证据**：不只按 checkbox 文字判断，先读该 TODO 关联项目的 git log 与项目记忆（`wiki/projects/<slug>.md` 决策日志，以及该项目若有 Claude Code memory）核对实际进度（表面「久未动」的可能早已完成、或正是当前活跃焦点），再判 4 态：
+
+| 状态 | 处理 |
+|---|---|
+| ✅ 完成 | 勾选 `- [x]` + 标 `✅ <YYYY-MM-DD>`，**必列证据**（commit 短哈希 / 文件 / 链接）；日记内的不移 |
+| ❌ 失效 | 勾选 `- [x]` + 划掉 `~~…~~` + 注「❌ 失效 <date>（理由）」 |
+| 可拆 | 拆成子 TODO 后顺延 |
+| 顺延 | 更 `📅` 截止日期（跟进类默认顺延，不主动 fade out） |
+
+新产生的登记：Obsidian Tasks 语法 + `#todo/<类型>` + 关联页，写进 `## 进行中` / `## 待办`；显著停滞的加 `#todo/stale` + 一句标注（不主动删除，fade out 是用户的决定）。
+
+**完成即归档 sweep（只扫中央 `wiki/todos.md`）**：把本次在 todos.md 标 ✅ / ❌ 的完成项（均已勾 `- [x]` 闭合），从 `## 进行中` / `## 待办` 移到末尾 `## 📦 已完成归档` 段，精简为一句结论 + 完成日期（细节当天日记已有、不留全文），主存储恒只剩活跃项；`- [x]` 闭合态让归档项对 `not done` 聚合 query 与收尾清单自动不回流（否则失效项虽划线仍被当活跃待办）。找不到归档段 → append 文件尾（同 D.2 兜底）。TODO 若被用户演化到别处记（如项目页），那里的完成项原位留作上下文、不搬。
 
 ### D.4 commit + push
 
@@ -168,8 +179,9 @@ frontmatter: date / day(周X 或 weekday) / projects[](= 正文提及的项目 s
 ## Step E · 晨起报告 + 观测
 
 1. 终端打印清单：日记路径与主线 / wiki 触点 / TODO 变化 / **降级源清单**（谁跳了、为什么、自救命令）/ 「待定级」新项目 / 未附带信息时提示「按默认跑，请核对」
-2. `.ingest-history.log`（本地观测文件，在 .gitignore 内不入 git）追加一行 JSON：`{"date","mode","duration_min","status","commit","skipped_sources":[]}`；duration 用 Step 0 记录的 `START_TIME` 计算
-3. `.ingest-status.md`：全部成功 → 写 `last-success: <时间戳>`；有卡点 → 写卡点 + 自救命令（如 IM token 过期 → 给出重新认证命令）
+2. **本次未完成清单**（会话输出，视图永不物化）：用聚合口径扫 `wiki/todos.md` 活跃未完成项（带 `#todo` 标签、排除 `#todo/stale` 与 `diaries/`），按截止分档打印给用户（🔴 已过期 / 当天到期 · 🟡 有未来 `📅` · ⚪ 无日期）。核心决策：文件只存储（主存储分区 + `## 📦` 归档 + 可选 Obsidian query），「当前待办」看板是 Claude 会话输出（此处收尾清单 + 平时「列出待办」现算现给），故非 Obsidian 环境同样可用、不依赖 todos.md 里任何死 query 文本
+3. `.ingest-history.log`（本地观测文件，在 .gitignore 内不入 git）追加一行 JSON：`{"date","mode","duration_min","status","commit","skipped_sources":[]}`；duration 用 Step 0 记录的 `START_TIME` 计算
+4. `.ingest-status.md`：全部成功 → 写 `last-success: <时间戳>`；有卡点 → 写卡点 + 自救命令（如 IM token 过期 → 给出重新认证命令）
 
 ## 错误路径速查
 

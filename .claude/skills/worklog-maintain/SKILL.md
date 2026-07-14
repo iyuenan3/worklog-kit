@@ -41,7 +41,7 @@ python3 .claude/skills/worklog-lint/scripts/lint.py --health
 | 孤儿页 | 先判断价值：仍有价值 → 从相关 wiki 页补一条入链；已完结 / 过时 → `git mv` 入 `wiki/archive/`（不删除）；拿不准 → 不动，小结里列出留给用户 |
 | 实体分裂 | 选 canonical 名（优先已有项目页的名字），把 wiki 与 todos 里的变体 wikilink 全部重链到 canonical（**diaries 一个都不改**）；变体若自有页面，内容并入 canonical 后原页改为 alias 存根：frontmatter 写 `alias_of: <canonical>` + 正文一行指针（存根让历史日记链接仍可解析，体检也不再把它算分裂）；候选是机械归一化产物，中英别名等语义级同一性由你判断，误报直接跳过并在小结说明 |
 | 膨胀 | 页面超体积 → 历史段落移入 `wiki/archive/<页名>-<年份>.md`，原页留一行指针；决策日志超条数 → 老条目移入 `wiki/archive/<slug>-decisions.md`，原段保留最近条目 + 一行指针 |
-| TODO 年龄 | 逐条对照日记与项目页：确认已完成的打勾 + 补完成日期；仍有效的不动；僵尸（长期无进展无提及）加 `#todo/stale` + 一句标注，不关闭（已标记的任务体检不再重复报，等用户处置） |
+| TODO 年龄 | **判断前先挖证据**：读整行原文（不信 --health 截断串）+ 该 TODO 关联项目的 git log 与项目记忆（项目页决策日志，及该项目若有 Claude Code memory），别只按 checkbox 文字判：表面「N 周没动」的可能早已完成、或正是当前活跃焦点。已完成 → 原位勾 `- [x]` + 标 `✅ <date>` + 列证据（commit / 文件），不移；仍有效 / 跟进类 / 含未来 `📅` 的 snooze 项 → 不动、不 `#todo/stale`；仅确无跟进意图的废弃项、先把候选列给用户确认后才加 `#todo/stale` + 一句标注，不关闭（已标记的体检不再重复报，等用户处置） |
 
 commit：每类一个，格式 `maintain: <类型>（<N> 项）`（en vault 用 `maintain: <type> (<N> items)`），正文列触及文件；尾行 Co-Authored-By 约定与 ingest D.4 相同。
 
